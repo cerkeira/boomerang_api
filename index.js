@@ -1,7 +1,6 @@
 const express = require('express')
 const app = express()
 require('dotenv').config();
-const User = require('./controllers/user')
 const pool = require ('./db/index')
 const port = process.env.PORT;
 
@@ -20,16 +19,6 @@ pool.connect((err, client, done) => {
   }
 });
 
-
-app.get('/users', function (req, res){
-  const users=User.findAll()
-    .then((results)=> {
-      console.log("Users Shown");
-      res.json(results[0]);
-    })
-    .catch((error)=>{
-      console.log(error);
-    });
-});
-
+const usersRoute = require('./routes/users');
+app.use('/users', usersRoute);
 
