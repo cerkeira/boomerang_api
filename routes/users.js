@@ -6,7 +6,7 @@ router.get('/', async (req, res) => {
   try {
     const users = await User.findAll();
     console.log("Users Shown");
-    res.json(users.rows);
+    res.json(users[0]);
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: 'Internal Server Error' });
