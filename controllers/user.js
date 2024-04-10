@@ -3,8 +3,8 @@ const User= require('../models/user')
 
 const user = {
 
-    findAll(){
-        return User.find()
+    find20(nameSearch){
+        return User.find(nameSearch)
     }
 
 }
