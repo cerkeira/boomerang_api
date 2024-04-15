@@ -1,0 +1,31 @@
+name: Prettier + Lint
+
+on:
+    push:
+        branches: ['**']
+
+jobs:
+    setup:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v3
+            - name: Prettier
+              uses: actions/setup-node@v3
+              with:
+                  cache: 'npm'
+            - run: npm install
+            - run: npx prettier . --write
+            - run: npx prettier . --check
+
+    test:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v3
+            - name: Lint
+              uses: actions/setup-node@v3
+              with:
+                  cache: 'npm'
+            - run: npm install
+            - run: npm run lint
