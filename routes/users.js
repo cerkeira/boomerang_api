@@ -1,45 +1,13 @@
-// const express = require('express');
-// const router = express.Router();
-// const User = require('../controllers/user');
-//
-// router.get('/search', async (req, res) => {
-//   try {
-//     const nameSearch = req.body;
-//     const result = await User.find20(nameSearch);
-//     console.log("Users Shown");
-//     res.json(result[0]);
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).json({ error: 'Internal Server Error' });
-//   }
-// });
-//
-// module.exports = router;
-
-
-
-const express = require("express");
-const UserController = require("../controllers/user");
-
+const express = require('express');
 const router = express.Router();
+const userController = require('../controllers/user');
 
-// Route to get all users
-router.get("/", UserController.getAll);
+router.get('/', userController.getAllUsers);
 
-// router.get("/", (req,res) => {
-//     res.send('select all')
-// });
+// router.post("/", userController.create);
 
-// Route to get a specific user by ID
-router.get("/:id", UserController.getById);
+// router.put("/:id", userController.update);
 
-// Route to create a new user
-router.post("/", UserController.create);
-
-// Route to update an existing user
-router.put("/:id", UserController.update);
-
-// Route to delete a user
-router.delete("/:id", UserController.destroy);
+// router.delete("/:id", userController.destroy);
 
 module.exports = router;
