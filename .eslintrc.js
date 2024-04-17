@@ -12,5 +12,8 @@ module.exports = {
   rules: {
     semi: 'off',
     'no-console': 'off',
+    'import/order': 'off',
+    'no-multiple-empty-lines': 'off',
+    'linebreak-style': 'off',
   },
 };
