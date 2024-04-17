@@ -12,5 +12,6 @@ module.exports = {
   rules: {
     semi: 'off',
     'no-console': 'off',
+    indent: 'off',
   },
 };
