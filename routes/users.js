@@ -5,6 +5,9 @@ const userController = require('../controllers/user');
 
 router.get('/', userController.getAllUsers);
 
+router.get('/search', userController.searchUsersByUsername);
+
+
 // router.post("/", userController.create);
 
 // router.put("/:id", userController.update);
