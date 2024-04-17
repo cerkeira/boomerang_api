@@ -13,5 +13,8 @@ module.exports = {
     semi: 'off',
     'no-console': 'off',
     indent: 'off',
+    'import/order': 'off',
+    'no-multiple-empty-lines': 'off',
+    'linebreak-style': 'off',
   },
 };
