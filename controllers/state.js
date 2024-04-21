@@ -1,5 +1,4 @@
 const State = require('../models/state');
-const { Sequelize } = require('sequelize');
 
 
 exports.getAllStates = async (req, res) => {
