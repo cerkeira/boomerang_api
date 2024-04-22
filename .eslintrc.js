@@ -23,5 +23,6 @@ module.exports = {
     camelcase: 'off',
     'no-trailing-spaces': 'off',
     'object-shorthand': 'off'
+
   },
 };
