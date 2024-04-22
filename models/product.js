@@ -1,5 +1,11 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../db');
+const User = require ('./user');
+const Color = require ('./color');
+const Grade = require ('./grade');
+const ProductType = require ('./productType');
+const Size = require ('./size');
+
 
 const Product = sequelize.define('Product', {
   title: {
@@ -7,19 +13,18 @@ const Product = sequelize.define('Product', {
     allowNull: false,
   },
   description: {
-    type: DataTypes.STRING,
-    allowNull: true,
+    type: DataTypes.TEXT,
+    allowNull: false,
   },
   measurements: {
-    type: DataTypes.JSON,
-    allowNull: true,
+    type: DataTypes.STRING,
   },
   value: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.FLOAT,
     allowNull: false,
   },
   price_day: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.FLOAT,
     allowNull: false,
   },
   date: {
@@ -27,33 +32,23 @@ const Product = sequelize.define('Product', {
     allowNull: false,
   },
   availability: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.BOOLEAN,
     allowNull: false,
   },
   brand: {
     type: DataTypes.STRING,
-    allowNull: true,
-  },
-  product_types_id_product_types: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-  color_id_color: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-  grades_id_grades: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-  sizes_id_sizes: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-  users_id_users: {
-    type: DataTypes.INTEGER,
     allowNull: false,
   },
 });
+
+
+
+Product.belongsTo(Size);
+Product.belongsTo(ProductType);
+Product.belongsTo(Color);
+Product.belongsTo(Grade);
+Product.belongsTo(User);
+
+
 
 module.exports = Product;

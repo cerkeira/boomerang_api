@@ -1,6 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../db');
 
+
 const User = sequelize.define('User', {
   username: {
     type: DataTypes.STRING,
@@ -25,9 +26,8 @@ const User = sequelize.define('User', {
   bio: {
     type: DataTypes.STRING,
   },
-  images_id_images: {
-    type: DataTypes.INTEGER,
-  },
 });
+
+
 
 module.exports = User;
