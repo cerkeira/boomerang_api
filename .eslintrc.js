@@ -20,7 +20,7 @@ module.exports = {
     'comma-dangle': 'off',
     'func-call-spacing': 'off',
     'no-spaced-func': 'off',
-    'camelcase': 'off',
+    camelcase: 'off',
     'no-trailing-spaces': 'off',
     'object-shorthand': 'off'
   },
