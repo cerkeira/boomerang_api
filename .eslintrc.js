@@ -22,7 +22,7 @@ module.exports = {
     'no-spaced-func': 'off',
     camelcase: 'off',
     'no-trailing-spaces': 'off',
-    'object-shorthand': 'off'
-
+    'object-shorthand': 'off',
+    'consistent-return': 'off',
   },
 };

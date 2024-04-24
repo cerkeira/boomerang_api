@@ -37,7 +37,7 @@ exports.getProduct = async (req, res) => {
       ],
     });
 
-    res.json(product);
+    res.status(200).json(product);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Failed to fetch product.' });
@@ -99,7 +99,7 @@ exports.deleteProduct = async (req, res) => {
     })
 
 
-    res.status(201).json(product);
+    res.status(200).json(product);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Failed to delete product.' });
@@ -184,7 +184,9 @@ exports.getForm = async (req, res) => {
       ],
     });
 
-    res.json({sizes,productTypes,colors,grades});
+    res.status(200).json({
+ sizes, productTypes, colors, grades 
+});
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Failed to fetch form data.' });
