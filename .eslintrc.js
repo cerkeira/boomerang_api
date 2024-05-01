@@ -22,6 +22,8 @@ module.exports = {
         'no-trailing-spaces': 'off',
         'object-shorthand': 'off',
         'consistent-return': 'off',
+        'import/no-dynamic-require': 'off',
+        'global-require': 'off',
     },
     ignorePatterns: ['migrations/'],
 }
