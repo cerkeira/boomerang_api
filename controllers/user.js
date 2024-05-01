@@ -49,7 +49,9 @@ exports.searchUsersByUsername = async (req, res) => {
 
 exports.registerUser = async (req, res) => {
     try {
-        const { username, name, email, gender, password, location } = req.body
+        const {
+ username, name, email, gender, password, location 
+} = req.body
         const saltRounds = 10
         const passwordHash = await bcrypt.hash(password, saltRounds)
 
@@ -62,9 +64,9 @@ exports.registerUser = async (req, res) => {
         })
 
         if (location) {
-            const { name, address } = location
+            const { locationName, address } = location
             const newLocation = await Location.create({
-                name,
+                locationName,
                 address,
             })
             await newUser.addLocation(newLocation)
@@ -145,7 +147,9 @@ exports.editUser = async (req, res) => {
             return res.status(404).json({ message: 'User not found' })
         }
 
-        const { username, name, email, gender, bio } = req.body
+        const {
+ username, name, email, gender, bio 
+} = req.body
 
         await User.update(
             {

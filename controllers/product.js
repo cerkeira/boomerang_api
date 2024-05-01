@@ -101,7 +101,7 @@ exports.deleteProduct = async (req, res) => {
         }
         const user = await User.findOne({ where: { username: loggedUser } })
 
-        if (existingProduct.UserId != user.id) {
+        if (existingProduct.UserId !== user.id) {
             return res
                 .status(403)
                 .json({ message: `${user} can't delete ${existingProduct}` })
@@ -152,7 +152,7 @@ exports.editProduct = async (req, res) => {
         }
         const user = await User.findOne({ where: { username: loggedUser } })
 
-        if (existingProduct.UserId != user.id) {
+        if (existingProduct.UserId !== user.id) {
             return res
                 .status(403)
                 .json({ message: `${user} can't edit ${existingProduct}` })
