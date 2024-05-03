@@ -1,8 +1,7 @@
 const { Sequelize } = require('sequelize')
 const process = require('process')
 const envIndex = process.argv.indexOf('--env')
-const env =
-    envIndex !== -1 && process.argv[envIndex + 1]
+const env = envIndex !== -1 && process.argv[envIndex + 1]
         ? process.argv[envIndex + 1]
         : 'production'
 
