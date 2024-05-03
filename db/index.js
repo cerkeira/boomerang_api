@@ -1,13 +1,20 @@
 const { Sequelize } = require('sequelize')
-require('dotenv').config()
+const process = require('process')
+const envIndex = process.argv.indexOf('--env')
+const env =
+    envIndex !== -1 && process.argv[envIndex + 1]
+        ? process.argv[envIndex + 1]
+        : 'production'
+
+const config = require(`${__dirname}/../config/config.json`)[env]
 
 const sequelize = new Sequelize(
-    process.env.DB_NAME,
-    process.env.DB_USER,
-    process.env.DB_PASSWORD,
+    config.database,
+    config.username,
+    config.password,
     {
-        host: process.env.DB_HOST,
-        dialect: 'postgres',
+        host: config.host,
+        dialect: config.dialect,
         // logging: false,
     }
 )
