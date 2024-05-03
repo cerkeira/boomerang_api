@@ -28,7 +28,7 @@ app.use('/state', stateRoutes)
 
 defineAssociations()
 
-const PORT = process.env.PORT || 3000
+const PORT = 3000
 sequelize
     .sync({
         // force: true,
