@@ -47,6 +47,18 @@ exports.searchUsersByUsername = async (req, res) => {
     }
 }
 
+exports.getUser = async (req, res) => {
+    const { id } = req.params;
+    console.log('id', id);
+    try {
+        const users = await User.findByPk(id);
+        res.json(users);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to fetch user.' });
+    }
+};
+
 exports.registerUser = async (req, res) => {
     try {
         const {

@@ -5,6 +5,8 @@ const userController = require('../controllers/user')
 
 // router.get('/', userController.getAllUsers);
 
+router.get('/:id', userController.getUser);
+
 router.get('/search', userController.searchUsersByUsername)
 
 router.post('/register', userController.registerUser)
@@ -23,4 +25,4 @@ router.put('/editlocation', userController.editLocation)
 
 router.get('/locations', userController.listUserLocations)
 
-module.exports = router
+module.exports = router;
