@@ -5,8 +5,11 @@ const userController = require('../controllers/user');
 
 router.get('/', userController.getAllUsers);
 
-router.get('/search', userController.searchUsersByUsername);
+router.get('/:id', userController.getUser);
 
+// router.get('/:id/products', userController.getUserProducts);
+
+router.get('/search', userController.searchUsersByUsername);
 
 // router.post("/", userController.create);
 
@@ -14,4 +17,4 @@ router.get('/search', userController.searchUsersByUsername);
 
 // router.delete("/:id", userController.destroy);
 
-module.exports = router
+module.exports = router;

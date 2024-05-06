@@ -10,7 +10,6 @@ module.exports = {
     ecmaVersion: 12,
   },
   rules: {
-    semi: 'off',
     'no-console': 'off',
     indent: 'off',
     'import/order': 'off',

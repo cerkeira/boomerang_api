@@ -12,6 +12,4 @@ router.put('/', productController.editProduct);
 
 router.get('/form', productController.getForm);
 
-
-
-module.exports = router
+module.exports = router;
