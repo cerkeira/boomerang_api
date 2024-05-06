@@ -6,4 +6,4 @@ const stateController = require('../controllers/state');
 router.get('/', stateController.getAllStates);
 
 
-module.exports = router
+module.exports = router;
