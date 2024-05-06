@@ -6,15 +6,19 @@
     "scripts": {
         "test": "react-scripts test",
         "start": "node index.js",
+        "start:local": "node index.js -- --env local",
         "dev": "node --watch index.js",
         "lint": "eslint .",
-        "lint:fix": "eslint --fix ."
+        "lint:fix": "eslint --fix .",
+        "migrate": "npx sequelize-cli db:migrate --env production",
+        "migrate:local": "npx sequelize-cli db:migrate --env local"
     },
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "dotenv": "^16.4.5",
+        "bcrypt": "^5.1.1",
         "express": "^4.19.2",
+        "express-session": "^1.18.0",
         "mysql2": "^3.9.7",
         "pg": "^8.11.5",
         "prettier": "^3.2.5",
