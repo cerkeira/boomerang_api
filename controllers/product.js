@@ -8,6 +8,7 @@ const User = require('../models/user')
 exports.getProduct = async (req, res) => {
     try {
         const { id } = req.query
+
         const product = await Product.findAll({
             where: {
                 id: id,

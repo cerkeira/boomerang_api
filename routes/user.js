@@ -25,4 +25,4 @@ router.put('/editlocation', userController.editLocation)
 
 router.get('/locations', userController.listUserLocations)
 
-module.exports = router
+module.exports = router;
