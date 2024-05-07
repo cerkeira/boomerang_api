@@ -5,7 +5,7 @@ const userController = require('../controllers/user')
 
 // router.get('/', userController.getAllUsers);
 
-router.get('/:id', userController.getUser);
+router.get('/', userController.getUser)
 
 router.get('/search', userController.searchUsersByUsername)
 

@@ -11,7 +11,8 @@
         "lint": "eslint .",
         "lint:fix": "eslint --fix .",
         "migrate": "npx sequelize-cli db:migrate --env production",
-        "migrate:local": "npx sequelize-cli db:migrate --env local"
+        "migrate:local": "npx sequelize-cli db:migrate --env local",
+        "migrate:undo": "npx sequelize-cli db:migrate:undo --env production"
     },
     "author": "",
     "license": "ISC",

@@ -40,7 +40,7 @@ exports.searchUsersByUsername = async (req, res) => {
             offset,
         })
 
-        res.json(users)
+        res.status(200).json(users)
     } catch (error) {
         console.error(error)
         res.status(500).json({ message: 'Failed to search users.' })
@@ -48,16 +48,18 @@ exports.searchUsersByUsername = async (req, res) => {
 }
 
 exports.getUser = async (req, res) => {
-    const { id } = req.params;
-    console.log('id', id);
+    const { id } = req.query
+    console.log('id', id)
     try {
-        const users = await User.findByPk(id);
-        res.json(users);
+        const users = await User.findByPk(id, {
+            include: Location,
+        })
+        res.status(200).json(users)
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Failed to fetch user.' });
+        console.error(error)
+        res.status(500).json({ message: 'Failed to fetch user.' })
     }
-};
+}
 
 exports.registerUser = async (req, res) => {
     try {
@@ -78,7 +80,7 @@ exports.registerUser = async (req, res) => {
         if (location) {
             const { locationName, address } = location
             const newLocation = await Location.create({
-                locationName,
+                name: locationName,
                 address,
             })
             await newUser.addLocation(newLocation)
@@ -112,7 +114,7 @@ exports.loginUser = async (req, res) => {
         })
     } catch (error) {
         console.error(error)
-        res.status(401).json({ message: 'i he koe' })
+        res.status(401).json({ message: 'User not found.' })
     }
 }
 
