@@ -40,18 +40,30 @@ exports.searchUsersByUsername = async (req, res) => {
             offset,
         })
 
-        res.json(users)
+        res.status(200).json(users)
     } catch (error) {
         console.error(error)
         res.status(500).json({ message: 'Failed to search users.' })
     }
 }
 
+exports.getUser = async (req, res) => {
+    const { id } = req.query
+    console.log('id', id)
+    try {
+        const users = await User.findByPk(id, {
+            include: Location,
+        })
+        res.status(200).json(users)
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ message: 'Failed to fetch user.' })
+    }
+}
+
 exports.registerUser = async (req, res) => {
     try {
-        const {
- username, name, email, gender, password, location 
-} = req.body
+        const { username, name, email, gender, password, location } = req.body
         const saltRounds = 10
         const passwordHash = await bcrypt.hash(password, saltRounds)
 
@@ -66,7 +78,7 @@ exports.registerUser = async (req, res) => {
         if (location) {
             const { locationName, address } = location
             const newLocation = await Location.create({
-                locationName,
+                name: locationName,
                 address,
             })
             await newUser.addLocation(newLocation)
@@ -100,7 +112,7 @@ exports.loginUser = async (req, res) => {
         })
     } catch (error) {
         console.error(error)
-        res.status(401).json({ message: 'i he koe' })
+        res.status(401).json({ message: 'User not found.' })
     }
 }
 
@@ -147,9 +159,7 @@ exports.editUser = async (req, res) => {
             return res.status(404).json({ message: 'User not found' })
         }
 
-        const {
- username, name, email, gender, bio 
-} = req.body
+        const { username, name, email, gender, bio } = req.body
 
         await User.update(
             {
