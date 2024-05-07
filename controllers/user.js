@@ -63,7 +63,9 @@ exports.getUser = async (req, res) => {
 
 exports.registerUser = async (req, res) => {
     try {
-        const { username, name, email, gender, password, location } = req.body
+        const {
+ username, name, email, gender, password, location 
+} = req.body
         const saltRounds = 10
         const passwordHash = await bcrypt.hash(password, saltRounds)
 
@@ -159,7 +161,9 @@ exports.editUser = async (req, res) => {
             return res.status(404).json({ message: 'User not found' })
         }
 
-        const { username, name, email, gender, bio } = req.body
+        const {
+ username, name, email, gender, bio 
+} = req.body
 
         await User.update(
             {
