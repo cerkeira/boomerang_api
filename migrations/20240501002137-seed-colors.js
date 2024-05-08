@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 module.exports = {
     up: async (queryInterface, Sequelize) => {
@@ -12,13 +12,13 @@ module.exports = {
                 createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
                 updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
             },
-        ]
+        ];
 
-        await queryInterface.bulkInsert('Users', initialUsers, {})
+        await queryInterface.bulkInsert('Users', initialUsers, {});
 
         const initialColors = [
             {
-                name: 'Azúl',
+                name: 'Azul',
                 createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
                 updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
             },
@@ -42,9 +42,9 @@ module.exports = {
                 createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
                 updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
             },
-        ]
+        ];
 
-        await queryInterface.bulkInsert('Colors', initialColors, {})
+        await queryInterface.bulkInsert('Colors', initialColors, {});
 
         const initialSizes = [
             {
@@ -82,9 +82,9 @@ module.exports = {
                 createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
                 updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
             },
-        ]
+        ];
 
-        await queryInterface.bulkInsert('Sizes', initialSizes, {})
+        await queryInterface.bulkInsert('Sizes', initialSizes, {});
 
         const initialGrades = [
             {
@@ -112,21 +112,22 @@ module.exports = {
                 createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
                 updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
             },
-        ]
+        ];
 
-        await queryInterface.bulkInsert('Grades', initialGrades, {})
+        await queryInterface.bulkInsert('Grades', initialGrades, {});
 
         const initialLocations = [
             {
                 name: 'morada',
                 address: 'morada teste',
+                postalCode: '3810-200',
                 UserId: 1,
                 createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
                 updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
             },
-        ]
+        ];
 
-        await queryInterface.bulkInsert('Locations', initialLocations, {})
+        await queryInterface.bulkInsert('Locations', initialLocations, {});
 
         const initialProductTypes = [
             {
@@ -135,9 +136,13 @@ module.exports = {
                 createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
                 updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
             },
-        ]
+        ];
 
-        await queryInterface.bulkInsert('ProductTypes', initialProductTypes, {})
+        await queryInterface.bulkInsert(
+            'ProductTypes',
+            initialProductTypes,
+            {}
+        );
 
         const initialProducts = [
             {
@@ -145,7 +150,6 @@ module.exports = {
                 description: 'produto teste',
                 value: 200,
                 price_day: 20,
-                date: '2020-01-01 00:00:00',
                 availability: false,
                 brand: 'Gucci',
                 SizeId: 1,
@@ -156,24 +160,24 @@ module.exports = {
                 createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
                 updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
             },
-        ]
+        ];
 
-        await queryInterface.bulkInsert('Products', initialProducts, {})
+        await queryInterface.bulkInsert('Products', initialProducts, {});
     },
 
     down: async (queryInterface, Sequelize) => {
-        await queryInterface.bulkDelete('Colors', null, {})
+        await queryInterface.bulkDelete('Colors', null, {});
 
-        await queryInterface.bulkDelete('Sizes', null, {})
+        await queryInterface.bulkDelete('Sizes', null, {});
 
-        await queryInterface.bulkDelete('Grades', null, {})
+        await queryInterface.bulkDelete('Grades', null, {});
 
-        await queryInterface.bulkDelete('Locations', null, {})
+        await queryInterface.bulkDelete('Locations', null, {});
 
-        await queryInterface.bulkDelete('Products', null, {})
+        await queryInterface.bulkDelete('Products', null, {});
 
-        await queryInterface.bulkDelete('ProductTypes', null, {})
+        await queryInterface.bulkDelete('ProductTypes', null, {});
 
-        await queryInterface.bulkDelete('Users', null, {})
+        await queryInterface.bulkDelete('Users', null, {});
     },
-}
+};

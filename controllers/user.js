@@ -3,26 +3,6 @@ const Location = require('../models/location');
 const { Sequelize } = require('sequelize');
 const bcrypt = require('bcrypt');
 
-// exports.getAllUsers = async (req, res) => {
-//     try {
-//         const users = await User.findAll({
-//             attributes: [
-//                 'id_users',
-//                 'username',
-//                 'name',
-//                 'email',
-//                 'gender',
-//                 'bio',
-//                 'images_id_images',
-//             ],
-//         })
-//         res.json(users)
-//     } catch (error) {
-//         console.error(error)
-//         res.status(500).json({ message: 'Failed to fetch user.' })
-//     }
-// }
-
 exports.searchUsersByUsername = async (req, res) => {
     try {
         const { username, page } = req.query;
@@ -63,9 +43,7 @@ exports.getUser = async (req, res) => {
 
 exports.registerUser = async (req, res) => {
     try {
-        const {
- username, name, email, gender, password, location 
-} = req.body;
+        const { username, name, email, gender, password, location } = req.body;
         const saltRounds = 10;
         const passwordHash = await bcrypt.hash(password, saltRounds);
 
@@ -121,26 +99,25 @@ exports.loginUser = async (req, res) => {
 exports.deleteUser = async (req, res) => {
     try {
         const loggedUser = req.session.user;
+        const { password } = req.body;
 
-        const { username } = req.query;
-
-        if (loggedUser !== username) {
-            return res
-                .status(403)
-                .json({ message: `${loggedUser} can't delete ${username}` });
+        const user = await User.findOne({ where: { username: loggedUser } });
+        if (!user) {
+            return res.status(404).json({ message: `User not found.` });
         }
 
-        await User.destroy({
-            where: {
-                username: username,
-            },
-            attributes: ['username'],
-        });
+        const passwordCheck = await bcrypt.compare(password, user.password);
+        if (!passwordCheck) {
+            return res.status(403).json({ message: `Invalid password.` });
+        }
 
-        res.status(200).json({ message: `${username} has been deleted` });
+        await User.destroy({ where: { username: loggedUser } });
+
+        res.status(200).json({ message: `${loggedUser} has been deleted` });
+        req.session.destroy();
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Ko Iron Man ahau' });
+        res.status(500).json({ message: 'Failed to delete user.' });
     }
 };
 
@@ -161,9 +138,7 @@ exports.editUser = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const {
- username, name, email, gender, bio 
-} = req.body;
+        const { username, name, email, gender, bio } = req.body;
 
         await User.update(
             {
@@ -192,7 +167,7 @@ exports.editPassword = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const { password } = req.body;
+        const { password, newPassword } = req.body;
 
         const existingUser = await User.findOne({
             where: { username: loggedUser },
@@ -202,7 +177,17 @@ exports.editPassword = async (req, res) => {
             password,
             existingUser.password
         );
-        if (passwordCheck) {
+        if (!passwordCheck) {
+            return res.status(403).json({
+                message: 'Present password is invalid.',
+            });
+        }
+
+        const passwordHistoryCheck = await bcrypt.compare(
+            newPassword,
+            existingUser.password
+        );
+        if (passwordHistoryCheck) {
             return res.status(403).json({
                 message:
                     'New password needs to be diferent from last password.',
@@ -210,7 +195,7 @@ exports.editPassword = async (req, res) => {
         }
 
         const saltRounds = 10;
-        const passwordHash = await bcrypt.hash(password, saltRounds);
+        const passwordHash = await bcrypt.hash(newPassword, saltRounds);
 
         await User.update(
             {
@@ -225,75 +210,5 @@ exports.editPassword = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Failed to change password.' });
-    }
-};
-
-exports.editLocation = async (req, res) => {
-    try {
-        const loggedUser = req.session.user;
-        if (!loggedUser) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        const { id, locationName, address } = req.body;
-
-        const user = await User.findOne({ where: { username: loggedUser } });
-
-        const userLocation = await Location.findByPk(id);
-
-        if (!userLocation || userLocation.UserId !== user.id) {
-            return res.status(404).json({
-                message: 'Location not found or does not belong to the user',
-            });
-        }
-
-        await userLocation.update({ name: locationName, address });
-
-        res.status(200).json({ message: 'Location updated' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Failed to edit location.' });
-    }
-};
-
-exports.listUserLocations = async (req, res) => {
-    try {
-        const loggedUser = req.session.user;
-        if (!loggedUser) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        const user = await User.findOne({ where: { username: loggedUser } });
-
-        const userLocations = await user.getLocations();
-
-        res.status(200).json(userLocations);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Failed to list user locations.' });
-    }
-};
-
-exports.addLocation = async (req, res) => {
-    try {
-        const loggedUser = req.session.user;
-        if (!loggedUser) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        const { locationName, address } = req.body;
-
-        const user = await User.findOne({ where: { username: loggedUser } });
-
-        const newLocation = await Location.create({
-            name: locationName,
-            address,
-        });
-        await user.addLocation(newLocation);
-
-        res.status(200).json({ message: 'Location added' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Failed to add location.' });
     }
 };
