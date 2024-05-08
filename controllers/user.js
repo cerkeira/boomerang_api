@@ -43,7 +43,9 @@ exports.getUser = async (req, res) => {
 
 exports.registerUser = async (req, res) => {
     try {
-        const { username, name, email, gender, password, location } = req.body;
+        const {
+ username, name, email, gender, password, location 
+} = req.body;
         const saltRounds = 10;
         const passwordHash = await bcrypt.hash(password, saltRounds);
 
@@ -103,12 +105,12 @@ exports.deleteUser = async (req, res) => {
 
         const user = await User.findOne({ where: { username: loggedUser } });
         if (!user) {
-            return res.status(404).json({ message: `User not found.` });
+            return res.status(404).json({ message: 'User not found.' });
         }
 
         const passwordCheck = await bcrypt.compare(password, user.password);
         if (!passwordCheck) {
-            return res.status(403).json({ message: `Invalid password.` });
+            return res.status(403).json({ message: 'Invalid password.' });
         }
 
         await User.destroy({ where: { username: loggedUser } });
@@ -138,7 +140,9 @@ exports.editUser = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const { username, name, email, gender, bio } = req.body;
+        const {
+ username, name, email, gender, bio 
+} = req.body;
 
         await User.update(
             {

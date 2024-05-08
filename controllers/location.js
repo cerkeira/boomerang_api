@@ -8,7 +8,9 @@ exports.editLocation = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const { id, locationName, address, postalCode } = req.body;
+        const {
+ id, locationName, address, postalCode 
+} = req.body;
 
         const user = await User.findOne({ where: { username: loggedUser } });
 
