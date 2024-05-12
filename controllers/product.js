@@ -4,6 +4,8 @@ const ProductType = require('../models/productType');
 const Color = require('../models/color');
 const Grade = require('../models/grade');
 const User = require('../models/user');
+const { Op } = require('sequelize');
+const Favorite = require('../models/favorite')
 
 exports.getProduct = async (req, res) => {
     try {
@@ -195,3 +197,79 @@ exports.getForm = async (req, res) => {
         res.status(500).json({ message: 'Failed to fetch form data.' });
     }
 };
+
+exports.searchProducts = async (req, res) => {
+    try {
+        const {
+            name, size, color, category, brand, orderBy, orderDirection
+} = req.query;
+
+        const whereCondition = {};
+        const orderCondition = [];
+
+        if (name) {
+            whereCondition.title = {
+                [Op.like]: `%${name}%`
+            };
+        }
+
+        if (size) {
+            whereCondition['$Size.name$'] = size;
+        }
+
+        if (color) {
+            whereCondition['$Color.name$'] = color;
+        }
+
+        if (category) {
+            whereCondition['$ProductType.name$'] = category;
+        }
+        if (brand) {
+            whereCondition.brand = brand;
+        }
+
+        if (orderBy && (orderDirection === 'ASC' || orderDirection === 'DESC')) {
+            orderCondition.push([orderBy, orderDirection]);
+        }
+
+        const products = await Product.findAll({
+            where: whereCondition,
+            include: [
+                { model: Size, attributes: ['name'] },
+                { model: ProductType, attributes: ['name', 'category'] },
+                { model: Color, attributes: ['name'] },
+                { model: Grade, attributes: ['name'] },
+            ],
+            order: orderCondition,
+        });
+
+         const loggedUser = req.session.user;
+
+
+        if (loggedUser) {
+            const user = await User.findOne({ where: { username: loggedUser } });
+
+            const favoriteProductIds = (await Favorite.findAll({
+                where: { userId: user.id },
+                attributes: ['productId']
+            })).map((favorite) => favorite.productId);
+
+            const productsWithFavorite = products.map((product) => ({
+                ...product.toJSON(),
+                favorite: favoriteProductIds.includes(product.id)
+            }));
+
+            res.status(200).json(productsWithFavorite);
+        } else {
+            res.status(200).json(products);
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to search products.' });
+    }
+};
+
+
+
+
+
