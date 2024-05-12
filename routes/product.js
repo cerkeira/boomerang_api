@@ -12,4 +12,6 @@ router.put('/', productController.editProduct);
 
 router.get('/form', productController.getForm);
 
+router.get('/search', productController.searchProducts);
+
 module.exports = router;
