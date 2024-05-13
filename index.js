@@ -1,5 +1,6 @@
 const express = require('express');
 const session = require('express-session');
+const cors = require('cors');
 
 const app = express();
 const sequelize = require('./db');
@@ -21,7 +22,8 @@ app.use(
             // secure: true,
             httpOnly: true,
         },
-    })
+    }),
+    cors()
 );
 
 app.use('/user', userRoutes);
