@@ -35,7 +35,7 @@ defineAssociations();
 const PORT = 3000;
 sequelize
     .sync({
-        force: true,
+        // force: true,
     })
     .then(() => {
         app.listen(PORT, () => {
