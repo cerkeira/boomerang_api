@@ -25,5 +25,5 @@ module.exports = {
         'import/no-dynamic-require': 'off',
         'global-require': 'off',
     },
-    ignorePatterns: ['migrations/'],
-}
+    ignorePatterns: ['migrations/', 'seeders/'],
+};
