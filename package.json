@@ -12,7 +12,8 @@
         "lint:fix": "eslint --fix .",
         "migrate": "npx sequelize-cli db:migrate --env production",
         "migrate:local": "npx sequelize-cli db:migrate --env local",
-        "migrate:undo": "npx sequelize-cli db:migrate:undo --env production"
+        "migrate:undo": "npx sequelize-cli db:migrate:undo --env production",
+        "seed": "npx sequelize-cli db:seed:all --env production"
     },
     "author": "",
     "license": "ISC",
@@ -26,6 +27,7 @@
         "sequelize": "^6.37.2"
     },
     "devDependencies": {
+        "@faker-js/faker": "^8.4.1",
         "eslint": "^8.57.0",
         "eslint-config-airbnb-base": "^15.0.0",
         "eslint-plugin-import": "^2.29.1"
