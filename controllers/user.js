@@ -2,6 +2,7 @@ const User = require('../models/user');
 const Location = require('../models/location');
 const { Sequelize } = require('sequelize');
 const bcrypt = require('bcrypt');
+const { validationResult } = require('express-validator');
 
 exports.searchUsersByUsername = async (req, res) => {
     try {
@@ -42,6 +43,10 @@ exports.getUser = async (req, res) => {
 };
 
 exports.registerUser = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
     try {
         const {
  username, name, email, gender, password, location 
