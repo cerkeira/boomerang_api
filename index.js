@@ -10,6 +10,8 @@ const favoriteRoutes = require('./routes/favorite');
 const stateRoutes = require('./routes/state');
 const locationRoutes = require('./routes/location');
 const defineAssociations = require('./models/associations');
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./swagger.json');
 
 app.use(express.json());
 
@@ -33,6 +35,8 @@ app.use('/state', stateRoutes);
 app.use('/location', locationRoutes);
 
 defineAssociations();
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 const PORT = 3000;
 sequelize
