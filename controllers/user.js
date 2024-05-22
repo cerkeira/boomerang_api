@@ -13,7 +13,7 @@ exports.searchUsersByUsername = async (req, res) => {
         const users = await User.findAll({
             where: {
                 username: {
-                    [Sequelize.Op.like]: `%${username}%`,
+                    [Sequelize.Op.iLike]: `%${username}%`,
                 },
             },
             attributes: ['id', 'username', 'name'],
