@@ -29,8 +29,19 @@ exports.searchUsersByUsername = async (req, res) => {
 };
 
 exports.getUser = async (req, res) => {
-    const { id } = req.query;
+    let { id } = req.query;
     console.log('id', id);
+    if (!id) {
+        const loggedUser = req.session.user;
+        if (loggedUser) {
+            const existingUser = await User.findOne({
+                where: { username: loggedUser },
+            });
+            id = existingUser.id;
+        } else {
+            res.status(500).json({ message: 'Utilizador não encontrado.' });
+        }
+    }
     try {
         const users = await User.findByPk(id, {
             include: Location,
@@ -84,7 +95,7 @@ exports.loginUser = async (req, res) => {
 
         const user = await User.findOne({ where: { username } });
         if (!user) {
-            throw new Error('User not found');
+            throw new Error('Utilizador não encontrado.');
         }
 
         const passwordCheck = await bcrypt.compare(password, user.password);
@@ -99,7 +110,7 @@ exports.loginUser = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
-        res.status(401).json({ message: 'User not found.' });
+        res.status(401).json({ message: 'Utilizador não encontrado.' });
     }
 };
 
@@ -110,7 +121,9 @@ exports.deleteUser = async (req, res) => {
 
         const user = await User.findOne({ where: { username: loggedUser } });
         if (!user) {
-            return res.status(404).json({ message: 'User not found.' });
+            return res
+                .status(404)
+                .json({ message: 'Utilizador não encontrado.' });
         }
 
         const passwordCheck = await bcrypt.compare(password, user.password);
@@ -142,7 +155,9 @@ exports.editUser = async (req, res) => {
     try {
         const loggedUser = req.session.user;
         if (!loggedUser) {
-            return res.status(404).json({ message: 'User not found' });
+            return res
+                .status(404)
+                .json({ message: 'Utilizador não encontrado.' });
         }
 
         const {
@@ -173,7 +188,9 @@ exports.editPassword = async (req, res) => {
     try {
         const loggedUser = req.session.user;
         if (!loggedUser) {
-            return res.status(404).json({ message: 'User not found' });
+            return res
+                .status(404)
+                .json({ message: 'Utilizador não encontrado.' });
         }
 
         const { password, newPassword } = req.body;
