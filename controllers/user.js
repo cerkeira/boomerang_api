@@ -28,8 +28,19 @@ exports.searchUsersByUsername = async (req, res) => {
 };
 
 exports.getUser = async (req, res) => {
-    const { id } = req.query;
+    let { id } = req.query;
     console.log('id', id);
+    if (!id) {
+        let loggedUser = req.session.user;
+        if (loggedUser) {
+            let existingUser = await User.findOne({
+                where: { username: loggedUser },
+            });
+            id = existingUser.id;
+        } else {
+            res.status(500).json({ message: 'Utilizador não encontrado.' });
+        }
+    }
     try {
         const users = await User.findByPk(id, {
             include: Location,
@@ -43,9 +54,7 @@ exports.getUser = async (req, res) => {
 
 exports.registerUser = async (req, res) => {
     try {
-        const {
- username, name, email, gender, password, location 
-} = req.body;
+        const { username, name, email, gender, password, location } = req.body;
         const saltRounds = 10;
         const passwordHash = await bcrypt.hash(password, saltRounds);
 
@@ -79,7 +88,7 @@ exports.loginUser = async (req, res) => {
 
         const user = await User.findOne({ where: { username } });
         if (!user) {
-            throw new Error('User not found');
+            throw new Error('Utilizador não encontrado.');
         }
 
         const passwordCheck = await bcrypt.compare(password, user.password);
@@ -94,7 +103,7 @@ exports.loginUser = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
-        res.status(401).json({ message: 'User not found.' });
+        res.status(401).json({ message: 'Utilizador não encontrado.' });
     }
 };
 
@@ -105,7 +114,9 @@ exports.deleteUser = async (req, res) => {
 
         const user = await User.findOne({ where: { username: loggedUser } });
         if (!user) {
-            return res.status(404).json({ message: 'User not found.' });
+            return res
+                .status(404)
+                .json({ message: 'Utilizador não encontrado.' });
         }
 
         const passwordCheck = await bcrypt.compare(password, user.password);
@@ -137,12 +148,12 @@ exports.editUser = async (req, res) => {
     try {
         const loggedUser = req.session.user;
         if (!loggedUser) {
-            return res.status(404).json({ message: 'User not found' });
+            return res
+                .status(404)
+                .json({ message: 'Utilizador não encontrado.' });
         }
 
-        const {
- username, name, email, gender, bio 
-} = req.body;
+        const { username, name, email, gender, bio } = req.body;
 
         await User.update(
             {
@@ -168,7 +179,9 @@ exports.editPassword = async (req, res) => {
     try {
         const loggedUser = req.session.user;
         if (!loggedUser) {
-            return res.status(404).json({ message: 'User not found' });
+            return res
+                .status(404)
+                .json({ message: 'Utilizador não encontrado.' });
         }
 
         const { password, newPassword } = req.body;
