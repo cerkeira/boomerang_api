@@ -32,9 +32,9 @@ exports.getUser = async (req, res) => {
     let { id } = req.query;
     console.log('id', id);
     if (!id) {
-        let loggedUser = req.session.user;
+        const loggedUser = req.session.user;
         if (loggedUser) {
-            let existingUser = await User.findOne({
+            const existingUser = await User.findOne({
                 where: { username: loggedUser },
             });
             id = existingUser.id;
@@ -59,7 +59,9 @@ exports.registerUser = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
     try {
-        const { username, name, email, gender, password, location } = req.body;
+        const {
+ username, name, email, gender, password, location 
+} = req.body;
         const saltRounds = 10;
         const passwordHash = await bcrypt.hash(password, saltRounds);
 
@@ -158,7 +160,9 @@ exports.editUser = async (req, res) => {
                 .json({ message: 'Utilizador não encontrado.' });
         }
 
-        const { username, name, email, gender, bio } = req.body;
+        const {
+ username, name, email, gender, bio 
+} = req.body;
 
         await User.update(
             {
