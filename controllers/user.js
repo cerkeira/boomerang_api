@@ -39,14 +39,16 @@ exports.getUser = async (req, res) => {
             });
             id = existingUser.id;
         } else {
-            res.status(500).json({ message: 'Utilizador não encontrado.' });
+            return res
+                .status(500)
+                .json({ message: 'Utilizador não encontrado.' });
         }
     }
     try {
-        const users = await User.findByPk(id, {
+        const user = await User.findByPk(id, {
             include: Location,
         });
-        res.status(200).json(users);
+        res.status(200).json(user);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Failed to fetch user.' });
