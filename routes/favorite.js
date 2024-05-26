@@ -5,29 +5,6 @@ const { check } = require('express-validator');
 
 /**
  * @swagger
- * /favorite:
- *   get:
- *     tags:
- *       - Favorites
- *     summary: Ver produtos favoritos do utilizador logado
- *     responses:
- *       200:
- *         description: List of favorite products
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Product'
- *       401:
- *         description: Utilizador não está logado
- *       500:
- *         description: Erro ao encontrar produtos favoritos
- */
-router.get('/', favoriteController.getFavoriteProducts);
-
-/**
- * @swagger
  * /favorite/add:
  *   post:
  *     tags:
@@ -52,8 +29,9 @@ router.get('/', favoriteController.getFavoriteProducts);
  *             schema:
  *               type: object
  *               properties:
- *                 message:
+ *                  message:
  *                   type: string
+ *                  description: Produto adicionado aos favoritos com sucesso
  *       400:
  *         description: Input Inválido
  *       401:
@@ -68,6 +46,29 @@ router.post(
     [check('productId').isInt().withMessage('Product ID must be an integer')],
     favoriteController.addToFavorites
 );
+
+/**
+ * @swagger
+ * /favorite:
+ *   get:
+ *     tags:
+ *       - Favorites
+ *     summary: Ver produtos favoritos do utilizador logado
+ *     responses:
+ *       200:
+ *         description: Lista de produtos favoritos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                description: Lista de favoritos do utilizador logado
+ *       401:
+ *         description: Utilizador não está logado
+ *       500:
+ *         description: Erro ao procurar produtos
+ */
+router.get('/', favoriteController.getFavoriteProducts);
 
 /**
  * @swagger

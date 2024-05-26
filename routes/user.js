@@ -16,14 +16,16 @@ const { check } = require('express-validator');
  *         schema:
  *           type: integer
  *         required: false
- *         description: ID do utilizador. Se o ID não for enviado, será enviada a informação do utilizador logado.
+ *         description: ID do utilizador. Omitir para usar o utilizador logado.
  *     responses:
  *       200:
  *         description: Dados do utilizador
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/User'
+ *               type: array
+ *               items:
+ *                  description: Dados do utilizador
  *       500:
  *         description: Utilizador não encontrado
  */
@@ -57,7 +59,7 @@ router.get('/', userController.getUser);
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/User'
+ *                  description: Resultados da pesquisa
  *       500:
  *         description: Erro na pesquisa
  */
@@ -105,7 +107,7 @@ router.get('/search', userController.searchUsersByUsername);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/User'
+ *                  description: Utilizador registado com sucesso
  *       500:
  *         description: Erro no registo
  */

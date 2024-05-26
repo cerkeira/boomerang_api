@@ -23,7 +23,7 @@ const { check } = require('express-validator');
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Product'
+ *                  description: Dados do produto
  *       404:
  *         description: Produto não encontrado.
  */
@@ -68,11 +68,11 @@ router.get('/', productController.getProduct);
  *                 type: integer
  *     responses:
  *       201:
- *         description: Produton publicado com sucesso
+ *         description: Produto publicado
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Product'
+ *                  description: Produto publicado com sucesso
  *       400:
  *         description: Input inválido
  *       500:
@@ -129,11 +129,11 @@ router.post(
  *                 type: integer
  *     responses:
  *       200:
- *         description: Produto atualizado com sucesso.
+ *         description: Produto atualizado
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Product'
+ *                  description: Produto atualizado com sucesso
  *       400:
  *         description: Input Inválido
  *       404:
@@ -271,7 +271,7 @@ router.get('/form', productController.getForm);
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Product'
+ *                  description: Resultados da pesquisa
  *       500:
  *         description: Erro ao pesquisar produtos
  */

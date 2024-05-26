@@ -29,11 +29,11 @@ const locationController = require('../controllers/location');
  *                 type: string
  *     responses:
  *       200:
- *         description: Morada atualizada com sucesso
+ *         description: Morada atualizada
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Location'
+ *                  description: Morada atualizada com sucesso
  *       400:
  *         description: Input inváldio
  *       404:
@@ -58,7 +58,7 @@ router.put('/', locationController.editLocation);
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Location'
+ *                  description: Moradas do utilizador
  *       500:
  *         description: Erro ao procurar moradas
  */
@@ -88,11 +88,11 @@ router.get('/', locationController.listUserLocations);
  *                 type: string
  *     responses:
  *       201:
- *         description: Morada adicionado com sucesso
+ *         description: Morada adicionada
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Location'
+ *                  description: Morada adicionada com sucesso
  *       400:
  *         description: Input inválido
  *       500:
