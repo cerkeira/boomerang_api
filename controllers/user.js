@@ -146,6 +146,7 @@ exports.deleteUser = async (req, res) => {
 exports.logoutUser = async (req, res) => {
     try {
         req.session.destroy();
+        res.clearCookie('connect.sid');
         res.status(200).json({ message: 'Logged out successfully' });
     } catch (error) {
         console.error(error);
