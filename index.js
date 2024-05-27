@@ -25,7 +25,7 @@ app.use(
             httpOnly: true,
         },
     }),
-    cors({ origin: 'http://localhost:3000', credentials: true })
+    cors({ origin: 'http://localhost:3001', credentials: true })
 );
 
 app.use('/user', userRoutes);
