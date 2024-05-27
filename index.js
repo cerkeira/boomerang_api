@@ -25,7 +25,7 @@ app.use(
             httpOnly: true,
         },
     }),
-    cors()
+    cors({ credentials: true })
 );
 
 app.use('/user', userRoutes);
