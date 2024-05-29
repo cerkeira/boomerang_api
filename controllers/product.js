@@ -4,6 +4,10 @@ const ProductType = require('../models/productType');
 const Color = require('../models/color');
 const Grade = require('../models/grade');
 const User = require('../models/user');
+const { Op } = require('sequelize');
+const Favorite = require('../models/favorite');
+const { Sequelize } = require('sequelize');
+const { validationResult } = require('express-validator');
 
 exports.getProduct = async (req, res) => {
     try {
@@ -19,21 +23,6 @@ exports.getProduct = async (req, res) => {
                 { model: Color, attributes: ['name'] },
                 { model: Grade, attributes: ['name'] },
             ],
-            attributes: [
-                'title',
-                'description',
-                'measurements',
-                'value',
-                'price_day',
-                'date',
-                'availability',
-                'brand',
-                'ProductTypeId',
-                'ColorId',
-                'SizeId',
-                'UserId',
-                'GradeId',
-            ],
         });
 
         res.status(200).json(product);
@@ -44,6 +33,11 @@ exports.getProduct = async (req, res) => {
 };
 
 exports.publishProduct = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
     try {
         const loggedUser = req.session.user;
         if (!loggedUser) {
@@ -123,6 +117,11 @@ exports.deleteProduct = async (req, res) => {
 };
 
 exports.editProduct = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
     try {
         const {
             id,
@@ -131,7 +130,6 @@ exports.editProduct = async (req, res) => {
             measurements,
             value,
             price_day,
-            date,
             availability,
             brand,
             sizeId,
@@ -165,7 +163,6 @@ exports.editProduct = async (req, res) => {
             measurements,
             value,
             price_day,
-            date,
             availability,
             brand,
             SizeId: sizeId,
@@ -213,26 +210,87 @@ exports.getForm = async (req, res) => {
     }
 };
 
-exports.getProduct = async (req, res) => {
+exports.searchProducts = async (req, res) => {
     try {
-        const { id } = req.query;
+        const { name, size, color, category, brand, orderBy, orderDirection } =
+            req.query;
 
-        const product = await Product.findAll({
-            where: {
-                id: id,
-            },
+        const whereCondition = {};
+        const orderCondition = [];
+
+        if (name) {
+            whereCondition.title = {
+                [Sequelize.Op.iLike]: `%${name}%`,
+            };
+        }
+
+        if (size) {
+            whereCondition['$Size.name$'] = {
+                [Op.iLike]: `%${size}%`,
+            };
+        }
+
+        if (color) {
+            whereCondition['$Color.name$'] = {
+                [Op.iLike]: `%${color}%`,
+            };
+        }
+
+        if (category) {
+            whereCondition['$ProductType.name$'] = {
+                [Op.iLike]: `%${category}%`,
+            };
+        }
+
+        if (brand) {
+            whereCondition.brand = {
+                [Op.iLike]: `%${brand}%`,
+            };
+        }
+
+        if (
+            orderBy &&
+            (orderDirection === 'ASC' || orderDirection === 'DESC')
+        ) {
+            orderCondition.push([orderBy, orderDirection]);
+        }
+
+        const products = await Product.findAll({
+            where: whereCondition,
             include: [
                 { model: Size, attributes: ['name'] },
                 { model: ProductType, attributes: ['name', 'category'] },
                 { model: Color, attributes: ['name'] },
                 { model: Grade, attributes: ['name'] },
             ],
-            attributes: ['id', 'title', 'price_day'],
+            order: orderCondition,
         });
 
-        res.status(200).json(product);
+        const loggedUser = req.session.user;
+
+        if (loggedUser) {
+            const user = await User.findOne({
+                where: { username: loggedUser },
+            });
+
+            const favoriteProductIds = (
+                await Favorite.findAll({
+                    where: { userId: user.id },
+                    attributes: ['productId'],
+                })
+            ).map((favorite) => favorite.productId);
+
+            const productsWithFavorite = products.map((product) => ({
+                ...product.toJSON(),
+                favorite: favoriteProductIds.includes(product.id),
+            }));
+
+            res.status(200).json(productsWithFavorite);
+        } else {
+            res.status(200).json(products);
+        }
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Failed to fetch product.' });
+        res.status(500).json({ message: 'Failed to search products.' });
     }
 };
