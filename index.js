@@ -12,7 +12,6 @@ const locationRoutes = require('./routes/location');
 const defineAssociations = require('./models/associations');
 
 app.use(express.json());
-
 app.use(
     session({
         secret: 'tangohiaTouRingaIRakuPacifier',
@@ -25,6 +24,7 @@ app.use(
     }),
     cors()
 );
+app.use(express.static('uploads'));
 
 app.use('/user', userRoutes);
 app.use('/product', productRoutes);

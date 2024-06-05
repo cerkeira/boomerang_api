@@ -16,7 +16,7 @@ exports.searchUsersByUsername = async (req, res) => {
                     [Sequelize.Op.like]: `%${username}%`,
                 },
             },
-            attributes: ['id', 'username', 'name'],
+            attributes: ['id', 'username', 'name', 'profileImage'],
             limit,
             offset,
         });
@@ -47,10 +47,9 @@ exports.registerUser = async (req, res) => {
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
+
     try {
-        const {
- username, name, email, gender, password, location 
-} = req.body;
+        const { username, name, email, gender, password, location } = req.body;
         const saltRounds = 10;
         const passwordHash = await bcrypt.hash(password, saltRounds);
 
@@ -60,6 +59,7 @@ exports.registerUser = async (req, res) => {
             email,
             gender,
             password: passwordHash,
+            profileImage: req.file ? req.file.filename : null,
         });
 
         if (location) {
@@ -119,6 +119,7 @@ exports.deleteUser = async (req, res) => {
         }
 
         await User.destroy({ where: { username: loggedUser } });
+        res.clearCookie('connect.sid');
 
         res.status(200).json({ message: `${loggedUser} has been deleted` });
         req.session.destroy();
@@ -131,6 +132,7 @@ exports.deleteUser = async (req, res) => {
 exports.logoutUser = async (req, res) => {
     try {
         req.session.destroy();
+        res.clearCookie('connect.sid');
         res.status(200).json({ message: 'Logged out successfully' });
     } catch (error) {
         console.error(error);
@@ -145,9 +147,7 @@ exports.editUser = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const {
- username, name, email, gender, bio 
-} = req.body;
+        const { username, name, email, gender, bio } = req.body;
 
         await User.update(
             {
@@ -156,6 +156,7 @@ exports.editUser = async (req, res) => {
                 email,
                 gender,
                 bio,
+                profileImage: req.file ? req.file.filename : null,
             },
             {
                 where: { username: loggedUser },
