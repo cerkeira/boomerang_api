@@ -66,9 +66,7 @@ router.get('/', userController.getUser);
  */
 router.get('/search', userController.searchUsersByUsername);
 
-router.post(
-    '/register',
-    upload.single('profileImage'),
+router.post('/register', upload.single('profileImage'));
 /**
  * @swagger
  * /user/register:

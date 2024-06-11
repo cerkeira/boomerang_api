@@ -30,9 +30,7 @@ const upload = require('../db/middleware/multerConfig');
  */
 router.get('/', productController.getProduct);
 
-router.post(
-    '/',
-    upload.single('productImage'),
+router.post('/', upload.single('productImage'));
 /**
  * @swagger
  * /product:
@@ -91,9 +89,7 @@ router.post(
     productController.publishProduct
 );
 
-router.put(
-    '/',
-    upload.single('productImage'),
+router.put('/', upload.single('productImage'));
 /**
  * @swagger
  * /product:
