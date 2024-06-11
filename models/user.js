@@ -27,10 +27,6 @@ const User = sequelize.define('User', {
     bio: {
         type: DataTypes.STRING,
     },
-});
-
-User.hasMany(Product, { foreignKey: 'UserId', as: 'products' });
-
     profileImage: {
         type: DataTypes.STRING,
         get() {
@@ -39,5 +35,9 @@ User.hasMany(Product, { foreignKey: 'UserId', as: 'products' });
         },
     },
 });
+
+User.hasMany(Product, { foreignKey: 'UserId', as: 'products' });
+
+
 
 module.exports = User;
