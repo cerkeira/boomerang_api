@@ -10,6 +10,8 @@ const favoriteRoutes = require('./routes/favorite');
 const stateRoutes = require('./routes/state');
 const locationRoutes = require('./routes/location');
 const defineAssociations = require('./models/associations');
+const swaggerUi = require('swagger-ui-express');
+const swaggerJsdoc = require('swagger-jsdoc');
 
 app.use(express.json());
 app.use(
@@ -22,7 +24,7 @@ app.use(
             httpOnly: true,
         },
     }),
-    cors()
+    cors({ origin: 'http://localhost:3001', credentials: true })
 );
 app.use(express.static('uploads'));
 
@@ -33,6 +35,31 @@ app.use('/state', stateRoutes);
 app.use('/location', locationRoutes);
 
 defineAssociations();
+
+const options = {
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'Boomerang API',
+            version: '0.98',
+        },
+        servers: [
+            {
+                url: 'http://localhost:3000/',
+            },
+        ],
+    },
+    apis: [
+        './routes/user.js',
+        './routes/product.js',
+        './routes/location.js',
+        './routes/favorite.js',
+    ],
+};
+
+const specs = swaggerJsdoc(options);
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 const PORT = 3000;
 sequelize

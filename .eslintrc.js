@@ -28,6 +28,7 @@ module.exports = {
         'operator-linebreak': 'off',
         'func-names': 'off',
         'no-unused-vars': 'off',
+        'import/no-unresolved': 'off',
     },
     ignorePatterns: ['migrations/', 'seeders/'],
 };
