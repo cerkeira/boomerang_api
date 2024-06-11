@@ -2,8 +2,7 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const process = require('process');
 const envIndex = process.argv.indexOf('--env');
-const env =
-    envIndex !== -1 && process.argv[envIndex + 1]
+const env = envIndex !== -1 && process.argv[envIndex + 1]
         ? process.argv[envIndex + 1]
         : 'production';
 const config = require(`${__dirname}/../config/config.json`)[env];

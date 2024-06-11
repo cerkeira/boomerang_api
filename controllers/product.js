@@ -212,8 +212,9 @@ exports.getForm = async (req, res) => {
 
 exports.searchProducts = async (req, res) => {
     try {
-        const { name, size, color, category, brand, orderBy, orderDirection } =
-            req.query;
+        const {
+ name, size, color, category, brand, orderBy, orderDirection 
+} = req.query;
 
         const whereCondition = {};
         const orderCondition = [];
@@ -249,8 +250,8 @@ exports.searchProducts = async (req, res) => {
         }
 
         if (
-            orderBy &&
-            (orderDirection === 'ASC' || orderDirection === 'DESC')
+            orderBy
+            && (orderDirection === 'ASC' || orderDirection === 'DESC')
         ) {
             orderCondition.push([orderBy, orderDirection]);
         }
