@@ -18,7 +18,6 @@ const authRoutes = require('./routes/auth');
 const PORT = 3000;
 
 app.use(express.json());
-
 app.use(
     session({
         secret: process.env.SESSION_SECRET || 'very_secret_key',
@@ -30,6 +29,7 @@ app.use(
     }),
     cors({ origin: 'http://localhost:3001', credentials: true })
 );
+app.use(express.static('uploads'));
 
 require('./db/passport');
 app.use(passport.initialize());

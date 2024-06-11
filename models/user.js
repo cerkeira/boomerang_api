@@ -1,6 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../db');
 const Product = require('./product');
+const config = require('config');
 
 const User = sequelize.define('User', {
     username: {
@@ -29,5 +30,14 @@ const User = sequelize.define('User', {
 });
 
 User.hasMany(Product, { foreignKey: 'UserId', as: 'products' });
+
+    profileImage: {
+        type: DataTypes.STRING,
+        get() {
+            const rawValue = this.getDataValue('profileImage');
+            return `${config.baseUrl}${rawValue}`;
+        },
+    },
+});
 
 module.exports = User;

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/user');
 const { check } = require('express-validator');
+const upload = require('../db/middleware/multerConfig');
 
 /**
  * @swagger
@@ -65,6 +66,7 @@ router.get('/', userController.getUser);
  */
 router.get('/search', userController.searchUsersByUsername);
 
+router.post('/register', upload.single('profileImage'));
 /**
  * @swagger
  * /user/register:
@@ -118,8 +120,8 @@ router.post(
         check('name').notEmpty().withMessage('Name is required'),
         check('email').isEmail().withMessage('Invalid email'),
         check('password')
-            .isLength({ min: 6 })
-            .withMessage('Password must be at least 6 characters long'),
+            .isLength({ min: 5 })
+            .withMessage('Password must be at least 5 characters long'),
     ],
     userController.registerUser
 );

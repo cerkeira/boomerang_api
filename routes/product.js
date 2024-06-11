@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/product');
 const { check } = require('express-validator');
+const upload = require('../db/middleware/multerConfig');
 
 /**
  * @swagger
@@ -29,6 +30,7 @@ const { check } = require('express-validator');
  */
 router.get('/', productController.getProduct);
 
+router.post('/', upload.single('productImage'));
 /**
  * @swagger
  * /product:
@@ -87,6 +89,7 @@ router.post(
     productController.publishProduct
 );
 
+router.put('/', upload.single('productImage'));
 /**
  * @swagger
  * /product:
