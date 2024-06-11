@@ -5,6 +5,7 @@ const Color = require('./color');
 const Grade = require('./grade');
 const ProductType = require('./productType');
 const Size = require('./size');
+const config = require('config');
 
 const Product = sequelize.define('Product', {
     title: {
@@ -33,6 +34,13 @@ const Product = sequelize.define('Product', {
     brand: {
         type: DataTypes.STRING,
         allowNull: false,
+    },
+    productImage: {
+        type: DataTypes.STRING,
+        get() {
+            const rawValue = this.getDataValue('productImage');
+            return `${config.baseUrl}${rawValue}`;
+        },
     },
 });
 

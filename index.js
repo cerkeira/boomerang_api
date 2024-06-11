@@ -14,7 +14,6 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 
 app.use(express.json());
-
 app.use(
     session({
         secret: 'tangohiaTouRingaIRakuPacifier',
@@ -27,6 +26,7 @@ app.use(
     }),
     cors({ origin: 'http://localhost:3001', credentials: true })
 );
+app.use(express.static('uploads'));
 
 app.use('/user', userRoutes);
 app.use('/product', productRoutes);

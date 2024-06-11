@@ -33,6 +33,9 @@ exports.getProduct = async (req, res) => {
 };
 
 exports.publishProduct = async (req, res) => {
+    console.log('Request Body:', req.body); // Log the request body
+    console.log('Request File:', req.file); // Log the request file
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -45,19 +48,21 @@ exports.publishProduct = async (req, res) => {
         }
         const user = await User.findOne({ where: { username: loggedUser } });
 
+        if (!user) {
+            return res.status(403).json({ message: 'User not found' });
+        }
+
         const {
             title,
             description,
             measurements,
             value,
             price_day,
-            date,
-            availability,
             brand,
-            sizeId,
-            productTypeId,
-            colorId,
-            gradeId,
+            SizeId,
+            ProductTypeId,
+            ColorId,
+            GradeId,
         } = req.body;
 
         const newProduct = await Product.create({
@@ -66,19 +71,19 @@ exports.publishProduct = async (req, res) => {
             measurements,
             value,
             price_day,
-            date,
-            availability,
+            availability: true,
             brand,
-            SizeId: sizeId,
-            ProductTypeId: productTypeId,
-            ColorId: colorId,
-            GradeId: gradeId,
+            SizeId,
+            ProductTypeId,
+            ColorId,
+            GradeId,
             UserId: user.id,
+            productImage: req.file ? req.file.filename : null,
         });
 
         res.status(201).json(newProduct);
     } catch (error) {
-        console.error(error);
+        console.error('Error during product creation:', error);
         res.status(500).json({ message: 'Failed to publish product.' });
     }
 };
@@ -132,10 +137,10 @@ exports.editProduct = async (req, res) => {
             price_day,
             availability,
             brand,
-            sizeId,
-            productTypeId,
-            colorId,
-            gradeId,
+            SizeId,
+            ProductTypeId,
+            ColorId,
+            GradeId,
         } = req.body;
 
         const loggedUser = req.session.user;
@@ -165,10 +170,11 @@ exports.editProduct = async (req, res) => {
             price_day,
             availability,
             brand,
-            SizeId: sizeId,
-            ProductTypeId: productTypeId,
-            ColorId: colorId,
-            GradeId: gradeId,
+            SizeId,
+            ProductTypeId,
+            ColorId,
+            GradeId,
+            productImage: req.file ? req.file.filename : null,
         });
 
         res.status(200).json(existingProduct);
@@ -212,16 +218,17 @@ exports.getForm = async (req, res) => {
 
 exports.searchProducts = async (req, res) => {
     try {
-        const {
- name, size, color, category, brand, orderBy, orderDirection 
-} = req.query;
+        const { name, size, color, category, brand, orderBy, orderDirection } =
+            req.query;
+
 
         const whereCondition = {};
         const orderCondition = [];
 
         if (name) {
             whereCondition.title = {
-                [Sequelize.Op.iLike]: `%${name}%`,
+                [Op.like]: `%${name}%`,
+
             };
         }
 
@@ -250,8 +257,9 @@ exports.searchProducts = async (req, res) => {
         }
 
         if (
-            orderBy
-            && (orderDirection === 'ASC' || orderDirection === 'DESC')
+            orderBy &&
+            (orderDirection === 'ASC' || orderDirection === 'DESC')
+
         ) {
             orderCondition.push([orderBy, orderDirection]);
         }

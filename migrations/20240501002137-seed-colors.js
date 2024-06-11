@@ -11,6 +11,7 @@ module.exports = {
                     '$2b$10$vFT9tEi6Vcd9barNvcqOseYVQCxlrzZDzLarq1dFGxwnTyU3.b9vO',
                 createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
                 updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                profileImage: '5fdb8143-0801-4e52-bfec-a1e5f909db0b.jpeg',
             },
         ];
 
@@ -38,7 +39,32 @@ module.exports = {
                 updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
             },
             {
-                name: 'Cinzento',
+                name: 'Amarelo',
+                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+            {
+                name: 'Rosa',
+                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+            {
+                name: 'Verde',
+                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+            {
+                name: 'Roxo',
+                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+            {
+                name: 'Multicor',
+                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+            {
+                name: 'Laranja',
                 createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
                 updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
             },
@@ -88,27 +114,17 @@ module.exports = {
 
         const initialGrades = [
             {
-                name: 'E',
+                name: 'Satisfatório',
                 createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
                 updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
             },
             {
-                name: 'D',
+                name: 'Bom',
                 createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
                 updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
             },
             {
-                name: 'C',
-                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
-                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
-            },
-            {
-                name: 'B',
-                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
-                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
-            },
-            {
-                name: 'A',
+                name: 'Muito Bom',
                 createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
                 updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
             },
@@ -131,8 +147,122 @@ module.exports = {
 
         const initialProductTypes = [
             {
+                name: 'Cerimónia',
+                category: 'Feminino',
+                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+            {
+                name: 'Vestidos',
+                category: 'Feminino',
+                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+            {
+                name: 'Camisolas',
+                category: 'Feminino',
+                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+            {
+                name: 'Casaco',
+                category: 'Feminino',
+                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+            {
                 name: 'Calças',
                 category: 'Feminino',
+                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+            {
+                name: 'Saia',
+                category: 'Feminino',
+                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+            {
+                name: 'Calções',
+                category: 'Feminino',
+                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+            {
+                name: 'Cerimónia',
+                category: 'Masculino',
+                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+            {
+                name: 'Camisolas',
+                category: 'Masculino',
+                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+            {
+                name: 'Casaco',
+                category: 'Masculino',
+                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+            {
+                name: 'Calças',
+                category: 'Masculino',
+                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+            {
+                name: 'Calções',
+                category: 'Masculino',
+                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+            {
+                name: '0-6 meses',
+                category: 'Criança',
+                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+            {
+                name: '7-18 meses',
+                category: 'Criança',
+                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+            {
+                name: '1-6 anos',
+                category: 'Criança',
+                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+            {
+                name: '6-14 anos',
+                category: 'Criança',
+                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+            {
+                name: 'Etnográfico',
+                category: 'Trajes',
+                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+            {
+                name: 'Natal',
+                category: 'Trajes',
+                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+            {
+                name: 'Carnaval',
+                category: 'Trajes',
+                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+            {
+                name: 'Halloween',
+                category: 'Trajes',
                 createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
                 updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
             },
