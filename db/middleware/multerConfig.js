@@ -16,14 +16,6 @@ const storage = multer.diskStorage({
     },
 });
 
-const upload = multer({
-    storage: storage,
-    limits: { fileSize: 500000 },
-    fileFilter: (req, file, cb) => {
-        checkFileType(file, cb);
-    },
-});
-
 function checkFileType(file, cb) {
     const filetypes = /jpeg|jpg|png|gif/;
     const extname = filetypes.test(
@@ -33,9 +25,16 @@ function checkFileType(file, cb) {
 
     if (mimetype && extname) {
         return cb(null, true);
-    } else {
-        cb('Error: Images Only!');
     }
+    cb('Error: Images Only!');
 }
+
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 500000 },
+    fileFilter: (req, file, cb) => {
+        checkFileType(file, cb);
+    },
+});
 
 module.exports = upload;

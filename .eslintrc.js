@@ -24,6 +24,10 @@ module.exports = {
         'consistent-return': 'off',
         'import/no-dynamic-require': 'off',
         'global-require': 'off',
+        'object-curly-newline': 'off',
+        'operator-linebreak': 'off',
+        'func-names': 'off',
+        'no-unused-vars': 'off',
     },
     ignorePatterns: ['migrations/', 'seeders/'],
 };

@@ -208,7 +208,6 @@ exports.getForm = async (req, res) => {
             productTypes,
             colors,
             grades,
-            z,
         });
     } catch (error) {
         console.error(error);
