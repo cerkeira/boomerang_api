@@ -24,6 +24,7 @@ module.exports = {
         'consistent-return': 'off',
         'import/no-dynamic-require': 'off',
         'global-require': 'off',
+        'import/no-unresolved': 'off',
     },
     ignorePatterns: ['migrations/', 'seeders/'],
 };

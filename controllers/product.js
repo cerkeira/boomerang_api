@@ -6,6 +6,7 @@ const Grade = require('../models/grade');
 const User = require('../models/user');
 const { Op } = require('sequelize');
 const Favorite = require('../models/favorite');
+const { Sequelize } = require('sequelize');
 const { validationResult } = require('express-validator');
 
 exports.getProduct = async (req, res) => {
@@ -221,33 +222,45 @@ exports.searchProducts = async (req, res) => {
         const { name, size, color, category, brand, orderBy, orderDirection } =
             req.query;
 
+
         const whereCondition = {};
         const orderCondition = [];
 
         if (name) {
             whereCondition.title = {
                 [Op.like]: `%${name}%`,
+
             };
         }
 
         if (size) {
-            whereCondition['$Size.name$'] = size;
+            whereCondition['$Size.name$'] = {
+                [Op.iLike]: `%${size}%`,
+            };
         }
 
         if (color) {
-            whereCondition['$Color.name$'] = color;
+            whereCondition['$Color.name$'] = {
+                [Op.iLike]: `%${color}%`,
+            };
         }
 
         if (category) {
-            whereCondition['$ProductType.name$'] = category;
+            whereCondition['$ProductType.name$'] = {
+                [Op.iLike]: `%${category}%`,
+            };
         }
+
         if (brand) {
-            whereCondition.brand = brand;
+            whereCondition.brand = {
+                [Op.iLike]: `%${brand}%`,
+            };
         }
 
         if (
             orderBy &&
             (orderDirection === 'ASC' || orderDirection === 'DESC')
+
         ) {
             orderCondition.push([orderBy, orderDirection]);
         }
