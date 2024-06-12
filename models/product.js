@@ -1,6 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../db');
-const User = require('./user');
 const Color = require('./color');
 const Grade = require('./grade');
 const ProductType = require('./productType');
@@ -48,6 +47,5 @@ Product.belongsTo(Size);
 Product.belongsTo(ProductType);
 Product.belongsTo(Color);
 Product.belongsTo(Grade);
-Product.belongsTo(User);
 
 module.exports = Product;
