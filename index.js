@@ -5,6 +5,8 @@ const cors = require('cors');
 const app = express();
 const sequelize = require('./db');
 const userRoutes = require('./routes/user');
+const popularRoutes = require('./routes/popular');
+const transactionRoutes = require('./routes/transaction');
 const productRoutes = require('./routes/product');
 const favoriteRoutes = require('./routes/favorite');
 const stateRoutes = require('./routes/state');
@@ -29,6 +31,8 @@ app.use(
 );
 
 app.use('/user', userRoutes);
+app.use('/popular', popularRoutes);
+app.use('/transaction', transactionRoutes);
 app.use('/product', productRoutes);
 app.use('/favorite', favoriteRoutes);
 app.use('/state', stateRoutes);
@@ -42,6 +46,7 @@ const PORT = 3000;
 sequelize
     .sync({
         // force: true,
+        logging: console.log,
     })
     .then(() => {
         app.listen(PORT, () => {
