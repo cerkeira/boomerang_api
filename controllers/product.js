@@ -5,7 +5,8 @@ const Color = require('../models/color');
 const Grade = require('../models/grade');
 const User = require('../models/user');
 const { Op } = require('sequelize');
-const Favorite = require('../models/favorite')
+const Favorite = require('../models/favorite');
+const { Sequelize } = require('sequelize');
 const { validationResult } = require('express-validator');
 
 exports.getProduct = async (req, res) => {
@@ -32,6 +33,9 @@ exports.getProduct = async (req, res) => {
 };
 
 exports.publishProduct = async (req, res) => {
+    console.log('Request Body:', req.body); // Log the request body
+    console.log('Request File:', req.file); // Log the request file
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -44,19 +48,21 @@ exports.publishProduct = async (req, res) => {
         }
         const user = await User.findOne({ where: { username: loggedUser } });
 
+        if (!user) {
+            return res.status(403).json({ message: 'User not found' });
+        }
+
         const {
             title,
             description,
             measurements,
             value,
             price_day,
-            date,
-            availability,
             brand,
-            sizeId,
-            productTypeId,
-            colorId,
-            gradeId,
+            SizeId,
+            ProductTypeId,
+            ColorId,
+            GradeId,
         } = req.body;
 
         const newProduct = await Product.create({
@@ -65,19 +71,19 @@ exports.publishProduct = async (req, res) => {
             measurements,
             value,
             price_day,
-            date,
-            availability,
+            availability: true,
             brand,
-            SizeId: sizeId,
-            ProductTypeId: productTypeId,
-            ColorId: colorId,
-            GradeId: gradeId,
+            SizeId,
+            ProductTypeId,
+            ColorId,
+            GradeId,
             UserId: user.id,
+            productImage: req.file ? req.file.filename : null,
         });
 
         res.status(201).json(newProduct);
     } catch (error) {
-        console.error(error);
+        console.error('Error during product creation:', error);
         res.status(500).json({ message: 'Failed to publish product.' });
     }
 };
@@ -131,10 +137,10 @@ exports.editProduct = async (req, res) => {
             price_day,
             availability,
             brand,
-            sizeId,
-            productTypeId,
-            colorId,
-            gradeId,
+            SizeId,
+            ProductTypeId,
+            ColorId,
+            GradeId,
         } = req.body;
 
         const loggedUser = req.session.user;
@@ -164,10 +170,11 @@ exports.editProduct = async (req, res) => {
             price_day,
             availability,
             brand,
-            SizeId: sizeId,
-            ProductTypeId: productTypeId,
-            ColorId: colorId,
-            GradeId: gradeId,
+            SizeId,
+            ProductTypeId,
+            ColorId,
+            GradeId,
+            productImage: req.file ? req.file.filename : null,
         });
 
         res.status(200).json(existingProduct);
@@ -211,35 +218,49 @@ exports.getForm = async (req, res) => {
 
 exports.searchProducts = async (req, res) => {
     try {
-        const {
-            name, size, color, category, brand, orderBy, orderDirection
-} = req.query;
+        const { name, size, color, category, brand, orderBy, orderDirection } =
+            req.query;
+
 
         const whereCondition = {};
         const orderCondition = [];
 
         if (name) {
             whereCondition.title = {
-                [Op.like]: `%${name}%`
+                [Op.like]: `%${name}%`,
+
             };
         }
 
         if (size) {
-            whereCondition['$Size.name$'] = size;
+            whereCondition['$Size.name$'] = {
+                [Op.iLike]: `%${size}%`,
+            };
         }
 
         if (color) {
-            whereCondition['$Color.name$'] = color;
+            whereCondition['$Color.name$'] = {
+                [Op.iLike]: `%${color}%`,
+            };
         }
 
         if (category) {
-            whereCondition['$ProductType.name$'] = category;
-        }
-        if (brand) {
-            whereCondition.brand = brand;
+            whereCondition['$ProductType.name$'] = {
+                [Op.iLike]: `%${category}%`,
+            };
         }
 
-        if (orderBy && (orderDirection === 'ASC' || orderDirection === 'DESC')) {
+        if (brand) {
+            whereCondition.brand = {
+                [Op.iLike]: `%${brand}%`,
+            };
+        }
+
+        if (
+            orderBy &&
+            (orderDirection === 'ASC' || orderDirection === 'DESC')
+
+        ) {
             orderCondition.push([orderBy, orderDirection]);
         }
 
@@ -254,20 +275,23 @@ exports.searchProducts = async (req, res) => {
             order: orderCondition,
         });
 
-         const loggedUser = req.session.user;
-
+        const loggedUser = req.session.user;
 
         if (loggedUser) {
-            const user = await User.findOne({ where: { username: loggedUser } });
+            const user = await User.findOne({
+                where: { username: loggedUser },
+            });
 
-            const favoriteProductIds = (await Favorite.findAll({
-                where: { userId: user.id },
-                attributes: ['productId']
-            })).map((favorite) => favorite.productId);
+            const favoriteProductIds = (
+                await Favorite.findAll({
+                    where: { userId: user.id },
+                    attributes: ['productId'],
+                })
+            ).map((favorite) => favorite.productId);
 
             const productsWithFavorite = products.map((product) => ({
                 ...product.toJSON(),
-                favorite: favoriteProductIds.includes(product.id)
+                favorite: favoriteProductIds.includes(product.id),
             }));
 
             res.status(200).json(productsWithFavorite);
@@ -279,8 +303,3 @@ exports.searchProducts = async (req, res) => {
         res.status(500).json({ message: 'Failed to search products.' });
     }
 };
-
-
-
-
-

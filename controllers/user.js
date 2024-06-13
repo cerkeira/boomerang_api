@@ -13,10 +13,10 @@ exports.searchUsersByUsername = async (req, res) => {
         const users = await User.findAll({
             where: {
                 username: {
-                    [Sequelize.Op.like]: `%${username}%`,
+                    [Sequelize.Op.iLike]: `%${username}%`,
                 },
             },
-            attributes: ['id', 'username', 'name'],
+            attributes: ['id', 'username', 'name', 'profileImage'],
             limit,
             offset,
         });
@@ -29,13 +29,26 @@ exports.searchUsersByUsername = async (req, res) => {
 };
 
 exports.getUser = async (req, res) => {
-    const { id } = req.query;
+    let { id } = req.query;
     console.log('id', id);
+    if (!id) {
+        const loggedUser = req.session.user;
+        if (loggedUser) {
+            const existingUser = await User.findOne({
+                where: { username: loggedUser },
+            });
+            id = existingUser.id;
+        } else {
+            return res
+                .status(500)
+                .json({ message: 'Utilizador não encontrado.' });
+        }
+    }
     try {
-        const users = await User.findByPk(id, {
+        const user = await User.findByPk(id, {
             include: Location,
         });
-        res.status(200).json(users);
+        res.status(200).json(user);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Failed to fetch user.' });
@@ -47,6 +60,7 @@ exports.registerUser = async (req, res) => {
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
+
     try {
         const {
  username, name, email, gender, password, location 
@@ -60,6 +74,7 @@ exports.registerUser = async (req, res) => {
             email,
             gender,
             password: passwordHash,
+            profileImage: req.file ? req.file.filename : null,
         });
 
         if (location) {
@@ -84,7 +99,7 @@ exports.loginUser = async (req, res) => {
 
         const user = await User.findOne({ where: { username } });
         if (!user) {
-            throw new Error('User not found');
+            throw new Error('Utilizador não encontrado.');
         }
 
         const passwordCheck = await bcrypt.compare(password, user.password);
@@ -99,7 +114,7 @@ exports.loginUser = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
-        res.status(401).json({ message: 'User not found.' });
+        res.status(401).json({ message: 'Utilizador não encontrado.' });
     }
 };
 
@@ -110,7 +125,9 @@ exports.deleteUser = async (req, res) => {
 
         const user = await User.findOne({ where: { username: loggedUser } });
         if (!user) {
-            return res.status(404).json({ message: 'User not found.' });
+            return res
+                .status(404)
+                .json({ message: 'Utilizador não encontrado.' });
         }
 
         const passwordCheck = await bcrypt.compare(password, user.password);
@@ -119,6 +136,7 @@ exports.deleteUser = async (req, res) => {
         }
 
         await User.destroy({ where: { username: loggedUser } });
+        res.clearCookie('connect.sid');
 
         res.status(200).json({ message: `${loggedUser} has been deleted` });
         req.session.destroy();
@@ -131,6 +149,7 @@ exports.deleteUser = async (req, res) => {
 exports.logoutUser = async (req, res) => {
     try {
         req.session.destroy();
+        res.clearCookie('connect.sid');
         res.status(200).json({ message: 'Logged out successfully' });
     } catch (error) {
         console.error(error);
@@ -142,7 +161,9 @@ exports.editUser = async (req, res) => {
     try {
         const loggedUser = req.session.user;
         if (!loggedUser) {
-            return res.status(404).json({ message: 'User not found' });
+            return res
+                .status(404)
+                .json({ message: 'Utilizador não encontrado.' });
         }
 
         const {
@@ -156,6 +177,7 @@ exports.editUser = async (req, res) => {
                 email,
                 gender,
                 bio,
+                profileImage: req.file ? req.file.filename : null,
             },
             {
                 where: { username: loggedUser },
@@ -173,7 +195,9 @@ exports.editPassword = async (req, res) => {
     try {
         const loggedUser = req.session.user;
         if (!loggedUser) {
-            return res.status(404).json({ message: 'User not found' });
+            return res
+                .status(404)
+                .json({ message: 'Utilizador não encontrado.' });
         }
 
         const { password, newPassword } = req.body;

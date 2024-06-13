@@ -1,10 +1,10 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../db');
-const User = require('./user');
 const Color = require('./color');
 const Grade = require('./grade');
 const ProductType = require('./productType');
 const Size = require('./size');
+const config = require('config');
 
 const Product = sequelize.define('Product', {
     title: {
@@ -34,12 +34,18 @@ const Product = sequelize.define('Product', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    productImage: {
+        type: DataTypes.STRING,
+        get() {
+            const rawValue = this.getDataValue('productImage');
+            return `${config.baseUrl}${rawValue}`;
+        },
+    },
 });
 
 Product.belongsTo(Size);
 Product.belongsTo(ProductType);
 Product.belongsTo(Color);
 Product.belongsTo(Grade);
-Product.belongsTo(User);
 
 module.exports = Product;

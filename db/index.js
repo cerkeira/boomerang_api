@@ -1,11 +1,8 @@
-const { Sequelize } = require('sequelize')
-const process = require('process')
-const envIndex = process.argv.indexOf('--env')
-const env = envIndex !== -1 && process.argv[envIndex + 1]
-        ? process.argv[envIndex + 1]
-        : 'production'
+const { Sequelize } = require('sequelize');
+const process = require('process');
+process.env.NODE_ENV = process.argv.slice(3);
 
-const config = require(`${__dirname}/../config/config.json`)[env]
+const config = require('config');
 
 const sequelize = new Sequelize(
     config.database,
@@ -16,6 +13,6 @@ const sequelize = new Sequelize(
         dialect: config.dialect,
         // logging: false,
     }
-)
+);
 
-module.exports = sequelize
+module.exports = sequelize;
