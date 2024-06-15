@@ -6,7 +6,6 @@ const Grade = require('../models/grade');
 const User = require('../models/user');
 const { Op } = require('sequelize');
 const Favorite = require('../models/favorite');
-const { Sequelize } = require('sequelize');
 const { validationResult } = require('express-validator');
 
 exports.getProduct = async (req, res) => {
@@ -234,25 +233,26 @@ exports.searchProducts = async (req, res) => {
 
         if (size) {
             whereCondition['$Size.name$'] = {
-                [Op.iLike]: `%${size}%`,
+                [Op.like]: `%${size}%`,
             };
         }
 
         if (color) {
             whereCondition['$Color.name$'] = {
-                [Op.iLike]: `%${color}%`,
+                [Op.like]: `%${color}%`,
             };
         }
 
         if (category) {
-            whereCondition['$ProductType.name$'] = {
-                [Op.iLike]: `%${category}%`,
-            };
+            whereCondition[Op.or] = [
+                { '$ProductType.name$': { [Op.like]: `%${category}%` } },
+                { '$ProductType.category$': { [Op.like]: `%${category}%` } }
+            ];
         }
 
         if (brand) {
             whereCondition.brand = {
-                [Op.iLike]: `%${brand}%`,
+                [Op.like]: `%${brand}%`,
             };
         }
 
@@ -263,6 +263,9 @@ exports.searchProducts = async (req, res) => {
         ) {
             orderCondition.push([orderBy, orderDirection]);
         }
+
+        console.log('Where Condition:', whereCondition);
+        console.log('Order Condition:', orderCondition);
 
         const products = await Product.findAll({
             where: whereCondition,
