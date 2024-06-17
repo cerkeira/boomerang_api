@@ -7,8 +7,8 @@ router.get('/google', googleController.googleAuth);
 
 router.get(
     '/google/callback',
-    authController.googleAuthCallback,
-    authController.googleAuthCallbackRedirect
+    googleController.googleAuthCallback,
+    googleController.googleAuthCallbackRedirect
 );
 
 router.get('/logout', googleController.logout);
