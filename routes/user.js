@@ -103,6 +103,8 @@ router.post('/register', upload.single('profileImage'));
  *                     type: string
  *                   address:
  *                     type: string
+ *               profileImage:
+ *                  type: string
  *     responses:
  *       201:
  *         description: Utilizador registado
@@ -243,6 +245,8 @@ router.delete('/', userController.deleteUser);
  *                 type: string
  *               bio:
  *                 type: string
+ *               profileImage:
+ *                  type: string
  *     responses:
  *       201:
  *         description: Utilizador atualizado
@@ -295,6 +299,14 @@ router.put('/', userController.editUser);
  *       500:
  *         description: Erro ao atualizar password.
  */
-router.put('/password', userController.editPassword);
+router.put(
+    '/password',
+    [
+        check('newPassword')
+            .isLength({ min: 5 })
+            .withMessage('Password must be at least 5 characters long'),
+    ],
+    userController.editPassword
+);
 
 module.exports = router;

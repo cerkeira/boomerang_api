@@ -68,6 +68,10 @@ router.post('/', upload.single('productImage'));
  *                 type: integer
  *               GradeId:
  *                 type: integer
+ *               Measurements:
+ *                 type: object
+ *               productImage:
+ *                 type: string
  *     responses:
  *       201:
  *         description: Produto publicado
@@ -130,6 +134,10 @@ router.put('/', upload.single('productImage'));
  *                 type: integer
  *               GradeId:
  *                 type: integer
+ *               Measurements:
+ *                 type: object
+ *               productImage:
+ *                 type: string
  *     responses:
  *       200:
  *         description: Produto atualizado

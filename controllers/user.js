@@ -62,9 +62,7 @@ exports.registerUser = async (req, res) => {
     }
 
     try {
-        const {
- username, name, email, gender, password, location 
-} = req.body;
+        const { username, name, email, gender, password, location } = req.body;
         const saltRounds = 10;
         const passwordHash = await bcrypt.hash(password, saltRounds);
 
@@ -99,12 +97,16 @@ exports.loginUser = async (req, res) => {
 
         const user = await User.findOne({ where: { username } });
         if (!user) {
-            throw new Error('Utilizador não encontrado.');
+            return res.status(404).json({
+                message: 'Utilizador não encontrado',
+            });
         }
 
         const passwordCheck = await bcrypt.compare(password, user.password);
         if (!passwordCheck) {
-            throw new Error('Invalid password');
+            return res.status(403).json({
+                message: 'Palavra-passe inválida',
+            });
         }
 
         req.session.user = username;
@@ -166,9 +168,7 @@ exports.editUser = async (req, res) => {
                 .json({ message: 'Utilizador não encontrado.' });
         }
 
-        const {
- username, name, email, gender, bio 
-} = req.body;
+        const { username, name, email, gender, bio } = req.body;
 
         await User.update(
             {
@@ -192,6 +192,10 @@ exports.editUser = async (req, res) => {
 };
 
 exports.editPassword = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
     try {
         const loggedUser = req.session.user;
         if (!loggedUser) {

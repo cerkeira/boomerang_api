@@ -76,7 +76,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 sequelize
     .sync({
         // force: true,
-        logging: true,
+        // logging: true,
     })
     .then(() => {
         app.listen(PORT, () => {
