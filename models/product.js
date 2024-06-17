@@ -16,7 +16,7 @@ const Product = sequelize.define('Product', {
         allowNull: false,
     },
     measurements: {
-        type: DataTypes.STRING,
+        type: DataTypes.JSON,
     },
     value: {
         type: DataTypes.FLOAT,
