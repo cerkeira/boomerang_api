@@ -6,6 +6,8 @@ const passport = require('passport');
 const app = express();
 const sequelize = require('./db');
 const userRoutes = require('./routes/user');
+const popularRoutes = require('./routes/popular');
+const transactionRoutes = require('./routes/transaction');
 const productRoutes = require('./routes/product');
 const favoriteRoutes = require('./routes/favorite');
 const locationRoutes = require('./routes/location');
@@ -36,6 +38,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/user', userRoutes);
+app.use('/popular', popularRoutes);
+app.use('/transaction', transactionRoutes);
 app.use('/product', productRoutes);
 app.use('/favorite', favoriteRoutes);
 app.use('/location', locationRoutes);
@@ -72,6 +76,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 sequelize
     .sync({
         // force: true,
+        // logging: true,
     })
     .then(() => {
         app.listen(PORT, () => {

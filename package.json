@@ -34,9 +34,10 @@
         "pg": "^8.11.5",
         "prettier": "^3.2.5",
         "sequelize": "^6.37.2",
-        "uuid": "^9.0.1",
+        "stripe": "^15.8.0",
         "swagger-jsdoc": "^6.2.8",
-        "swagger-ui-express": "^5.0.0"
+        "swagger-ui-express": "^5.0.0",
+        "uuid": "^9.0.1"
     },
     "devDependencies": {
         "@faker-js/faker": "^8.4.1",
