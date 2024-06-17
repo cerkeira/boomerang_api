@@ -4,7 +4,7 @@ const ProductType = require('../models/productType');
 const Color = require('../models/color');
 const Grade = require('../models/grade');
 const User = require('../models/user');
-const { Op } = require('sequelize');
+const { Sequelize } = require('sequelize');
 const Favorite = require('../models/favorite');
 const { validationResult } = require('express-validator');
 
@@ -220,52 +220,57 @@ exports.searchProducts = async (req, res) => {
         const { name, size, color, category, brand, orderBy, orderDirection } =
             req.query;
 
-
         const whereCondition = {};
         const orderCondition = [];
 
         if (name) {
             whereCondition.title = {
-                [Op.like]: `%${name}%`,
-
+                [Sequelize.Op.iLike]: `%${name}%`,
             };
         }
 
         if (size) {
             whereCondition['$Size.name$'] = {
-                [Op.like]: `%${size}%`,
+                [Sequelize.Op.iLike]: `%${size}%`,
             };
         }
 
         if (color) {
             whereCondition['$Color.name$'] = {
-                [Op.like]: `%${color}%`,
+                [Sequelize.Op.iLike]: `%${color}%`,
             };
         }
 
         if (category) {
-            whereCondition[Op.or] = [
-                { '$ProductType.name$': { [Op.like]: `%${category}%` } },
-                { '$ProductType.category$': { [Op.like]: `%${category}%` } }
+            whereCondition[Sequelize.Op.or] = [
+                {
+                    '$ProductType.name$': {
+                        [Sequelize.Op.iLike]: `%${category}%`,
+                    },
+                },
+                {
+                    '$ProductType.category$': {
+                        [Sequelize.Op.iLike]: `%${category}%`,
+                    },
+                },
             ];
         }
 
         if (brand) {
             whereCondition.brand = {
-                [Op.like]: `%${brand}%`,
+                [Sequelize.Op.iLike]: `%${brand}%`,
             };
         }
 
         if (
             orderBy &&
             (orderDirection === 'ASC' || orderDirection === 'DESC')
-
         ) {
             orderCondition.push([orderBy, orderDirection]);
         }
 
-        console.log('Where Condition:', whereCondition);
-        console.log('Order Condition:', orderCondition);
+        // console.log('Where Condition:', whereCondition);
+        // console.log('Order Condition:', orderCondition);
 
         const products = await Product.findAll({
             where: whereCondition,
