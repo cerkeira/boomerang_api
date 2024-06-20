@@ -7,6 +7,8 @@ const Fee = require('../models/fee');
 const User = require('../models/user');
 const { Op } = require('sequelize');
 // eslint-disable-next-line import/no-extraneous-dependencies
+const { differenceInCalendarDays } = require('date-fns');
+// eslint-disable-next-line import/no-extraneous-dependencies
 const stripe = require('stripe')('sk_test_51PJCQdFBiJETLeRnI4a0tuJgzArGvSqzN8Y2PQaA7x79dx0eVgJMQENX255WHg6ypwLopaENc6nhs5aaVXB5qZCT00N7KhoDdT');
 
 
@@ -21,8 +23,8 @@ const getStateIdByName = async (stateName) => {
 
 exports.createTransaction = async (req, res) => {
     const {
- date, price, productId, cuponId, fees, extras
-} = req.body;
+        date_start, date_end, date, productId, cuponId, fees, extras
+    } = req.body;
 
     const loggedUser = req.session.user;
     if (!loggedUser) {
@@ -39,7 +41,10 @@ exports.createTransaction = async (req, res) => {
             return res.status(404).json({ error: 'Product not found' });
         }
 
-        const ownerUserId = product.UserId
+        const days = differenceInCalendarDays(new Date(date_end), new Date(date_start)) + 1;
+        const price = product.price_day * days;
+
+        const ownerUserId = product.UserId;
 
         const stateId = await getStateIdByName('pending');
 
@@ -60,6 +65,8 @@ exports.createTransaction = async (req, res) => {
 
         const transactionLog = {
             date,
+            date_start,
+            date_end,
             price,
             renterUserId,
             ownerUserId,
@@ -102,7 +109,7 @@ exports.createTransaction = async (req, res) => {
             price,
             renterUserId,
             ownerUserId,
-            log: transactionLog,
+            log: JSON.stringify(transactionLog),
             ProductId: productId,
             StateId: stateId,
             CuponId: cuponId,
@@ -186,7 +193,7 @@ exports.getUserTransactions = async (req, res) => {
                     { ownerUserId: user.id }
                 ]
             },
-            attributes: ['log'] // Only select the log attribute
+            attributes: ['log']
         });
 
         const transactionLogs = transactions.map((transaction) => JSON.parse(transaction.log));
