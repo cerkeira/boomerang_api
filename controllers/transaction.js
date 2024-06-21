@@ -1,9 +1,7 @@
 const Product = require('../models/product');
 const Transaction = require('../models/transaction');
-const Cupon = require('../models/cupon');
 const State = require('../models/state');
 const Extra = require('../models/extra');
-const Fee = require('../models/fee');
 const User = require('../models/user');
 const { Op } = require('sequelize');
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -23,7 +21,7 @@ const getStateIdByName = async (stateName) => {
 
 exports.createTransaction = async (req, res) => {
     const {
-        date_start, date_end, date, productId, cuponId, fees, extras
+        date_start, date_end, date, productId
     } = req.body;
 
     const loggedUser = req.session.user;
@@ -48,21 +46,6 @@ exports.createTransaction = async (req, res) => {
 
         const stateId = await getStateIdByName('pending');
 
-        const cupon = cuponId ? await Cupon.findByPk(cuponId) : null;
-        if (cuponId && !cupon) {
-            return res.status(404).json({ error: 'Cupon not found' });
-        }
-
-        const feeRecords = fees ? await Fee.findAll({ where: { id: fees } }) : [];
-        if (fees && feeRecords.length !== fees.length) {
-            return res.status(404).json({ error: 'One or more fees not found' });
-        }
-
-        const extraRecords = extras ? await Extra.findAll({ where: { id: extras } }) : [];
-        if (extras && extraRecords.length !== extras.length) {
-            return res.status(404).json({ error: 'One or more extras not found' });
-        }
-
         const transactionLog = {
             date,
             date_start,
@@ -84,24 +67,9 @@ exports.createTransaction = async (req, res) => {
                 id: stateId,
                 name: 'pending'
             },
-            cupon: cupon ? {
-                id: cupon.id,
-                name: cupon.name,
-                value: cupon.value,
-                percentage: cupon.percentage,
-                availability: cupon.availability
-            } : null,
-            fees: feeRecords.map((fee) => ({
-                id: fee.id,
-                name: fee.name,
-                value: fee.value,
-                percentage: fee.percentage
-            })),
-            extras: extraRecords.map((extra) => ({
-                id: extra.id,
-                name: extra.name,
-                value: extra.value
-            }))
+            cupon: null,
+            fees: null,
+            extras: null,
         };
 
         const transaction = await Transaction.create({
@@ -112,18 +80,9 @@ exports.createTransaction = async (req, res) => {
             log: transactionLog,
             ProductId: productId,
             StateId: stateId,
-            CuponId: cuponId,
-            fees: feeRecords.map((fee) => ({
-                id: fee.id,
-                name: fee.name,
-                value: fee.value,
-                percentage: fee.percentage
-            })),
-            extras: extraRecords.map((extra) => ({
-                id: extra.id,
-                name: extra.name,
-                value: extra.value
-            }))
+            CuponId: null,
+            fees: null,
+            extras: null
         });
 
         res.status(201).json(transaction);
