@@ -31,13 +31,11 @@ const User = sequelize.define('User', {
         type: DataTypes.STRING,
         get() {
             const rawValue = this.getDataValue('profileImage');
-            return `${config.baseUrl}${rawValue}`;
+            return rawValue ? `${config.baseUrl}profile/${rawValue}` : null;
         },
     },
 });
 
 User.hasMany(Product, { foreignKey: 'UserId', as: 'products' });
-
-
 
 module.exports = User;

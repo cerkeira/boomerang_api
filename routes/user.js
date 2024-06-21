@@ -1,8 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/user');
-const { check } = require('express-validator');
-const upload = require('../db/middleware/multerConfig');
+const { check, validationResult } = require('express-validator');
+const {
+    uploadProfileMiddleware,
+    compressProfileImage,
+} = require('../db/middleware/uploadprofile');
 
 /**
  * @swagger
@@ -66,7 +69,6 @@ router.get('/', userController.getUser);
  */
 router.get('/search', userController.searchUsersByUsername);
 
-router.post('/register', upload.single('profileImage'));
 /**
  * @swagger
  * /user/register:
@@ -117,6 +119,8 @@ router.post('/register', upload.single('profileImage'));
  */
 router.post(
     '/register',
+    uploadProfileMiddleware,
+    compressProfileImage,
     [
         check('username').notEmpty().withMessage('Username is required'),
         check('name').notEmpty().withMessage('Name is required'),
@@ -125,6 +129,13 @@ router.post(
             .isLength({ min: 5 })
             .withMessage('Password must be at least 5 characters long'),
     ],
+    async (req, res, next) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+        next();
+    },
     userController.registerUser
 );
 
@@ -262,7 +273,14 @@ router.delete('/', userController.deleteUser);
  *       500:
  *         description: Erro a editar utilizador
  */
-router.put('/', userController.editUser);
+router.put(
+    '/',
+    uploadProfileMiddleware,
+    compressProfileImage,
+    userController.editUser
+);
+
+module.exports = router;
 
 /**
  * @swagger
@@ -306,6 +324,13 @@ router.put(
             .isLength({ min: 5 })
             .withMessage('Password must be at least 5 characters long'),
     ],
+    async (req, res, next) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+        next();
+    },
     userController.editPassword
 );
 

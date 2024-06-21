@@ -2,7 +2,8 @@ const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
 const passport = require('passport');
-
+const bodyParser = require('body-parser');
+const { deleteUncompressed } = require('./db/middleware/upload');
 const app = express();
 const sequelize = require('./db');
 const userRoutes = require('./routes/user');
@@ -14,11 +15,11 @@ const locationRoutes = require('./routes/location');
 const defineAssociations = require('./models/associations');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
-
 const googleRoutes = require('./routes/google');
 const PORT = 3000;
 
-app.use(express.json());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(
     session({
         secret: process.env.SESSION_SECRET || 'very_secret_key',
@@ -31,6 +32,8 @@ app.use(
     }),
     cors({ origin: 'http://localhost:3001', credentials: true })
 );
+deleteUncompressed();
+
 app.use(express.static('uploads'));
 
 require('./db/passport');

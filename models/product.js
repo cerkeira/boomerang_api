@@ -35,10 +35,12 @@ const Product = sequelize.define('Product', {
         allowNull: false,
     },
     productImage: {
-        type: DataTypes.STRING,
+        type: DataTypes.JSON,
         get() {
             const rawValue = this.getDataValue('productImage');
-            return `${config.baseUrl}${rawValue}`;
+            return rawValue
+                ? rawValue.map((image) => `${config.baseUrl}${image}`)
+                : [];
         },
     },
 });

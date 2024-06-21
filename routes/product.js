@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/product');
-const { check } = require('express-validator');
-const upload = require('../db/middleware/multerConfig');
-
+const { check, validationResult } = require('express-validator');
+const { uploadMiddleware, compressImages } = require('../db/middleware/upload');
 /**
  * @swagger
  * /product:
@@ -30,7 +29,6 @@ const upload = require('../db/middleware/multerConfig');
  */
 router.get('/', productController.getProduct);
 
-router.post('/', upload.single('productImage'));
 /**
  * @swagger
  * /product:
@@ -86,14 +84,22 @@ router.post('/', upload.single('productImage'));
  */
 router.post(
     '/',
+    uploadMiddleware,
+    compressImages,
     [
         check('title').notEmpty().withMessage('Title is required'),
         check('description').notEmpty().withMessage('Description is required'),
     ],
+    async (req, res, next) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+        next();
+    },
     productController.publishProduct
 );
 
-router.put('/', upload.single('productImage'));
 /**
  * @swagger
  * /product:
@@ -154,11 +160,20 @@ router.put('/', upload.single('productImage'));
  */
 router.put(
     '/',
+    uploadMiddleware,
+    compressImages,
     [
         check('id').isInt().withMessage('Product ID must be an integer'),
         check('title').notEmpty().withMessage('Title is required'),
         check('description').notEmpty().withMessage('Description is required'),
     ],
+    async (req, res, next) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+        next();
+    },
     productController.editProduct
 );
 
