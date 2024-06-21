@@ -1,6 +1,5 @@
 require('dotenv').config();
 
-const router = express.Router();
 const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
@@ -46,7 +45,7 @@ require('./db/passport');
 app.use(passport.initialize());
 app.use(passport.session());
 
-router.get('/', (req, res) => {
+express.Router().get('/', (req, res) => {
     res.json({ message: 'API da Boomerang' });
 });
 app.use('/user', userRoutes);
