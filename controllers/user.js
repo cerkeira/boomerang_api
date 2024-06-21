@@ -31,8 +31,7 @@ exports.searchUsersByUsername = async (req, res) => {
 
 exports.getUser = async (req, res) => {
     let { id } = req.query;
-    console.log('id', id);
-    let logged = false;
+
     if (!id) {
         const loggedUser = req.session.user;
         if (loggedUser) {
@@ -40,30 +39,37 @@ exports.getUser = async (req, res) => {
                 where: { username: loggedUser },
             });
             id = existingUser.id;
-            logged = true;
         } else {
             return res
                 .status(500)
                 .json({ message: 'Utilizador não encontrado.' });
         }
     }
+
     try {
-        if (logged) {
-            const user = await User.findByPk(id, {
-                include: [Location, Product],
-            });
-            res.status(200).json(user);
-        } else {
-            const user = await User.findByPk(id, {
-                include: Location,
-            });
-            res.status(200).json(user);
+        const userIncludeOptions = {
+            include: [Location],
+        };
+
+        const user = await User.findByPk(id, userIncludeOptions);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
         }
+        const products = await Product.findAll({
+            where: { UserId: id },
+        });
+
+        const userData = user.toJSON();
+        userData.products = products;
+
+        res.status(200).json(userData);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: `Erro : ${error}` });
     }
 };
+
 
 exports.registerUser = async (req, res) => {
     try {
