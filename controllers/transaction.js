@@ -109,7 +109,7 @@ exports.createTransaction = async (req, res) => {
             price,
             renterUserId,
             ownerUserId,
-            log: JSON.stringify(transactionLog),
+            log: transactionLog,
             ProductId: productId,
             StateId: stateId,
             CuponId: cuponId,
@@ -172,6 +172,46 @@ exports.setTransactionApproved = async (req, res) => {
     }
 };
 
+exports.setTransactionInTransit = async (req, res) => {
+    const { transactionId } = req.params;
+
+    try {
+        const stateId = await getStateIdByName('in transit');
+        const transaction = await Transaction.findByPk(transactionId);
+
+        if (!transaction) {
+            return res.status(404).json({ error: 'Transaction not found' });
+        }
+
+        transaction.StateId = stateId;
+        await transaction.save();
+
+        res.json({ transaction_id: transaction.id, state_id: transaction.StateId });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.setTransactionInUse = async (req, res) => {
+    const { transactionId } = req.params;
+
+    try {
+        const stateId = await getStateIdByName('in use');
+        const transaction = await Transaction.findByPk(transactionId);
+
+        if (!transaction) {
+            return res.status(404).json({ error: 'Transaction not found' });
+        }
+
+        transaction.StateId = stateId;
+        await transaction.save();
+
+        res.json({ transaction_id: transaction.id, state_id: transaction.StateId });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 
 exports.getUserTransactions = async (req, res) => {
     const loggedUser = req.session.user;
@@ -196,7 +236,7 @@ exports.getUserTransactions = async (req, res) => {
             attributes: ['log']
         });
 
-        const transactionLogs = transactions.map((transaction) => JSON.parse(transaction.log));
+        const transactionLogs = transactions.map((transaction) => transaction.log);
 
         res.json(transactionLogs);
     } catch (error) {
@@ -206,23 +246,28 @@ exports.getUserTransactions = async (req, res) => {
 
 
 exports.createCheckoutSession = async (req, res) => {
-    console.log('hello')
-    const { transactionId } = req.body;
+    const { transactionId, selectedExtras } = req.body;
 
     try {
-        const transaction = await Transaction.findByPk(transactionId);
+        const transaction = await Transaction.findByPk(transactionId, {
+            include: [Product]
+        });
         if (!transaction) {
             return res.status(404).json({ error: 'Transaction not found' });
         }
-        const parsedLog = JSON.parse(transaction.log);
-        console.log('product', parsedLog.product);
 
-        const product = await Product.findByPk(parsedLog.product.id);
-        if (!product) {
-            return res.status(404).json({ error: 'Product not found' });
+        let totalPrice = transaction.log.price;
+
+        if (selectedExtras && selectedExtras.length > 0) {
+            const extraRecords = await Extra.findAll({ where: { id: selectedExtras } });
+            extraRecords.forEach((extra) => {
+                totalPrice += extra.value;
+            });
         }
 
-        const api = 'http://localhost:3000'
+        req.session.selectedExtras = selectedExtras;
+
+        const api = 'http://localhost:3000';
 
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
@@ -230,22 +275,25 @@ exports.createCheckoutSession = async (req, res) => {
                 price_data: {
                     currency: 'eur',
                     product_data: {
-                        name: product.title,
-                        description: product.description,
-                        images: ['https://upload.wikimedia.org/wikipedia/pt/thumb/e/ed/Shrek%28personagem%29.jpg/150px-Shrek%28personagem%29.jpg'],
+                        name: transaction.log.product.title,
+                        description: transaction.log.product.description,
+                        images: ['https://example.com/product-image.jpg'],
                     },
-                    unit_amount: parsedLog.price * 100,
+                    unit_amount: totalPrice * 100,
                 },
                 quantity: 1,
             }],
             mode: 'payment',
-            success_url: `${api}/transaction/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${req.headers.origin}/shrek-store`,
+            success_url: `${api}/transaction/success?transactionId=${transactionId}&session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${req.headers.origin}/cancel-url`,
+            metadata: {
+                transactionId: transactionId // Store transactionId in metadata
+            }
         });
 
         res.json({ id: session.id });
     } catch (error) {
-        console.log(error)
+        console.error(error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -260,10 +308,33 @@ exports.stripeSuccess = async (req, res) => {
             return res.status(404).json({ error: 'Session not found' });
         }
 
-        const domain = 'http://localhost:3001'
 
-        res.redirect(`${domain}/transaction-success`);
+        const selectedExtras = req.session.selectedExtras || [];
+        const { transactionId } = session.metadata;
+
+        const transaction = await Transaction.findByPk(transactionId);
+        if (!transaction) {
+            return res.status(404).json({ error: 'Transaction not found' });
+        }
+
+        const extraRecords = await Extra.findAll({ where: { id: selectedExtras } });
+
+        transaction.extras = extraRecords.map((extra) => ({
+            id: extra.id,
+            name: extra.name,
+            value: extra.value
+        }));
+
+        await transaction.save();
+
+        req.session.selectedExtras = null;
+
+        const domain = 'http://localhost:3001';
+        console.log(session.metadata)
+
+        res.redirect(`${domain}/transaction-success`)
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: error.message });
     }
 };
