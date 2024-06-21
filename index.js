@@ -80,6 +80,7 @@ const options = {
         './routes/google.js',
         './routes/popular.js',
         './routes/transaction.js',
+        './routes/extra.js',
     ],
 };
 
