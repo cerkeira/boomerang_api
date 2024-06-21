@@ -1,16 +1,17 @@
+require('dotenv').config();
+
 const { Sequelize } = require('sequelize');
-const process = require('process');
-process.env.NODE_ENV = process.argv.slice(3);
+const arguments = require('process');
+process.env.NODE_ENV = arguments.argv.slice(3);
 
 const config = require('config');
-
 const sequelize = new Sequelize(
-    process.env.database || config.database,
-    process.env.username || config.username,
-    process.env.password || config.password,
+    config.database || process.env.DATABASE,
+    config.username || process.env.USERNAME,
+    config.password || process.env.PASSWORD,
     {
-        host: process.env.host || config.host,
-        dialect: process.env.dialect || config.dialect,
+        host: config.host || process.env.HOST,
+        dialect: config.dialect || process.env.DIALECT,
         // logging: false,
     }
 );
