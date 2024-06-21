@@ -47,7 +47,7 @@ require('./db/passport');
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use('/', (req, res) => res.status(200).json({ message: 'Esta é a API da Boomerang' }));
+// app.use('/', (req, res) => res.status(200).json({ message: 'Esta é a API da Boomerang' }));
 app.use('/user', userRoutes);
 app.use('/popular', popularRoutes);
 app.use('/transaction', transactionRoutes);
