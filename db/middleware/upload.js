@@ -8,7 +8,11 @@ const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const uploadPath = 'uploads/uncompressed';
         if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath);
+            try {
+                fs.mkdirSync(uploadPath, { recursive: true });
+            } catch (err) {
+                console.error('Error creating directory:', err);
+            }
         }
         cb(null, uploadPath);
     },
