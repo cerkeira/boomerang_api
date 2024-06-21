@@ -30,7 +30,10 @@ app.use(
             httpOnly: true,
         },
     }),
-    cors({ origin: 'http://localhost:3001', credentials: true })
+    cors({
+        origin: process.env.CORS_ORIGIN || 'http://localhost:3001',
+        credentials: true,
+    })
 );
 deleteUncompressed();
 
