@@ -1,18 +1,14 @@
+require('dotenv').config();
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const process = require('process');
-const envIndex = process.argv.indexOf('--env');
-const env =
-    envIndex !== -1 && process.argv[envIndex + 1]
-        ? process.argv[envIndex + 1]
-        : 'production';
 const config = require('config');
 
 passport.use(
     new GoogleStrategy(
         {
-            clientID: config.google_client_id,
-            clientSecret: config.google_client_secret,
+            clientID: process.env.google_client_id || config.google_client_id,
+            clientSecret:
+                process.env.google_client_secret || config.google_client_secret,
             callbackURL: '/auth/google/callback',
         },
         (accessToken, refreshToken, profile, done) => {
