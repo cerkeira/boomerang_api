@@ -14,10 +14,10 @@
         "migrate:local": "npx sequelize-cli db:migrate --env local",
         "migrate:undo": "npx sequelize-cli db:migrate:undo --env production",
         "seed": "npx sequelize-cli db:seed:all --env production"
-    },  
+    },
     "engines": {
         "node": "18.x"
-      },
+    },
     "author": "",
     "license": "ISC",
     "dependencies": {
