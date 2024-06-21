@@ -62,7 +62,7 @@ const options = {
         },
         servers: [
             {
-                url: 'http://localhost:3000/',
+                url: process.env.baseUrl || 'http://localhost:3000/',
             },
         ],
     },
