@@ -13,7 +13,7 @@ const {
  *   get:
  *     tags:
  *       - Users
- *     summary: Página de perfil.
+ *     summary: Página de perfil visto por outros.
  *     parameters:
  *       - in: query
  *         name: id
