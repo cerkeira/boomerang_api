@@ -45,6 +45,9 @@ require('./db/passport');
 app.use(passport.initialize());
 app.use(passport.session());
 
+router.get('/', (req, res) => {
+    res.json({ message: 'API da Boomerang' });
+});
 app.use('/user', userRoutes);
 app.use('/popular', popularRoutes);
 app.use('/transaction', transactionRoutes);
@@ -84,7 +87,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 sequelize
     .sync({
         // force: true,
-        // logging: true,
+        logging: true,
     })
     .then(() => {
         app.listen(PORT, () => {
