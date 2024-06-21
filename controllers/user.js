@@ -56,15 +56,12 @@ exports.getUser = async (req, res) => {
 };
 
 exports.registerUser = async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-
     try {
         const { username, name, email, gender, password, location } = req.body;
         const saltRounds = 10;
         const passwordHash = await bcrypt.hash(password, saltRounds);
+
+        const profileImagePath = req.file ? req.file.filename : null;
 
         const newUser = await User.create({
             username,
@@ -72,7 +69,7 @@ exports.registerUser = async (req, res) => {
             email,
             gender,
             password: passwordHash,
-            profileImage: req.file ? req.file.filename : null,
+            profileImage: profileImagePath,
         });
 
         if (location) {
@@ -87,7 +84,7 @@ exports.registerUser = async (req, res) => {
         res.status(201).json(newUser);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Failed to register user.' });
+        res.status(500).json({ message: `Failed to register user: ${error}` });
     }
 };
 
@@ -163,12 +160,11 @@ exports.editUser = async (req, res) => {
     try {
         const loggedUser = req.session.user;
         if (!loggedUser) {
-            return res
-                .status(404)
-                .json({ message: 'Utilizador não encontrado.' });
+            return res.status(404).json({ message: 'User not found.' });
         }
 
         const { username, name, email, gender, bio } = req.body;
+        const profileImagePath = req.file ? req.file.filename : null;
 
         await User.update(
             {
@@ -177,7 +173,7 @@ exports.editUser = async (req, res) => {
                 email,
                 gender,
                 bio,
-                profileImage: req.file ? req.file.filename : null,
+                profileImage: profileImagePath,
             },
             {
                 where: { username: loggedUser },
