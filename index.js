@@ -4,6 +4,7 @@ const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
 const passport = require('passport');
+// eslint-disable-next-line import/no-extraneous-dependencies
 const bodyParser = require('body-parser');
 const { deleteUncompressed } = require('./db/middleware/upload');
 const app = express();
@@ -14,6 +15,7 @@ const transactionRoutes = require('./routes/transaction');
 const productRoutes = require('./routes/product');
 const favoriteRoutes = require('./routes/favorite');
 const locationRoutes = require('./routes/location');
+const extraRoutes = require('./routes/extra');
 const defineAssociations = require('./models/associations');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
@@ -52,6 +54,7 @@ app.use('/product', productRoutes);
 app.use('/favorite', favoriteRoutes);
 app.use('/location', locationRoutes);
 app.use('/google', googleRoutes);
+app.use('/extra', extraRoutes);
 
 defineAssociations();
 
