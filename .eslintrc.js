@@ -29,6 +29,7 @@ module.exports = {
         'func-names': 'off',
         'no-unused-vars': 'off',
         'import/no-unresolved': 'off',
+        'array-callback-return': 'off',
     },
     ignorePatterns: ['migrations/', 'seeders/'],
 };

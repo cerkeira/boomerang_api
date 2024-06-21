@@ -29,9 +29,8 @@ const uploadProfile = multer({
 
         if (mimetype && extname) {
             return cb(null, true);
-        } else {
+        } 
             cb(new Error('Só são aceites ficheiros jpeg ou png.'));
-        }
     },
 }).single('profileImage');
 
@@ -68,7 +67,7 @@ const uploadProfileMiddleware = (req, res, next) => {
                 });
             }
             return res.status(400).json({ message: err.message });
-        } else if (err) {
+        } if (err) {
             return res.status(400).json({ message: err.message });
         }
         next();

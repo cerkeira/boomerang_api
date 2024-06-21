@@ -29,9 +29,8 @@ const upload = multer({
 
         if (mimetype && extname) {
             return cb(null, true);
-        } else {
-            cb(new Error('Só são aceites ficheiros jpeg ou png.'));
         }
+        cb(new Error('Só são aceites ficheiros jpeg ou png.'));
     },
 }).array('productImage', 5);
 
@@ -44,11 +43,9 @@ const deleteUncompressed = () => {
             }
 
             return console.log(
-                `Uncompressed files have been successfully removed.`
+                'Uncompressed files have been successfully removed.'
             );
         });
-    } else {
-        return;
     }
 };
 
@@ -73,9 +70,7 @@ const compressImages = (req, res, next) => {
                     .then((buffer) => {
                         fs.promises.writeFile(compressedFilePath, buffer);
                     })
-                    .catch((err) =>
-                        console.error('Error during image compression:', err)
-                    );
+                    .catch((err) => console.error('Error during image compression:', err));
             })
         );
     } catch (err) {
@@ -94,7 +89,8 @@ const uploadMiddleware = (req, res, next) => {
                 });
             }
             return res.status(400).json({ message: err.message });
-        } else if (err) {
+        }
+        if (err) {
             return res.status(400).json({ message: err.message });
         }
         next();
