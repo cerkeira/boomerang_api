@@ -217,8 +217,7 @@ exports.getForm = async (req, res) => {
 
 exports.searchProducts = async (req, res) => {
     try {
-        const { name, size, color, category, brand, orderBy, orderDirection } =
-            req.query;
+        const { name, size, color, category, gender, brand, orderBy, orderDirection } = req.query;
 
         const whereCondition = {};
         const orderCondition = [];
@@ -242,18 +241,15 @@ exports.searchProducts = async (req, res) => {
         }
 
         if (category) {
-            whereCondition[Sequelize.Op.or] = [
-                {
-                    '$ProductType.name$': {
-                        [Sequelize.Op.iLike]: `%${category}%`,
-                    },
-                },
-                {
-                    '$ProductType.category$': {
-                        [Sequelize.Op.iLike]: `%${category}%`,
-                    },
-                },
-            ];
+            whereCondition['$ProductType.name$'] = {
+                [Sequelize.Op.iLike]: `%${category}%`,
+            };
+        }
+
+        if (gender) {
+            whereCondition['$ProductType.category$'] = {
+                [Sequelize.Op.iLike]: `%${gender}%`,
+            };
         }
 
         if (brand) {
@@ -262,15 +258,9 @@ exports.searchProducts = async (req, res) => {
             };
         }
 
-        if (
-            orderBy &&
-            (orderDirection === 'ASC' || orderDirection === 'DESC')
-        ) {
+        if (orderBy && (orderDirection === 'ASC' || orderDirection === 'DESC')) {
             orderCondition.push([orderBy, orderDirection]);
         }
-
-        // console.log('Where Condition:', whereCondition);
-        // console.log('Order Condition:', orderCondition);
 
         const products = await Product.findAll({
             where: whereCondition,
