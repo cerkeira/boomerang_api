@@ -1,8 +1,8 @@
 require('dotenv').config();
 
 const { Sequelize } = require('sequelize');
-const arguments = require('process');
-process.env.NODE_ENV = arguments.argv.slice(3);
+const argument = require('process');
+process.env.NODE_ENV = argument.argv.slice(3);
 
 const config = require('config');
 const sequelize = new Sequelize(
