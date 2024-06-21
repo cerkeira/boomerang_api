@@ -32,17 +32,6 @@ const transactionController = require('../controllers/transaction');
  *                 format: date
  *               productId:
  *                 type: integer
- *               cuponId:
- *                 type: integer
- *                 nullable: true
- *               fees:
- *                 type: array
- *                 items:
- *                   type: integer
- *               extras:
- *                 type: array
- *                 items:
- *                   type: integer
  *     responses:
  *       201:
  *         description: Transaction created
