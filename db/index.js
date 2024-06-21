@@ -1,10 +1,16 @@
 require('dotenv').config();
-
+const pg = require('pg');
 const { Sequelize } = require('sequelize');
 const argument = require('process');
 process.env.NODE_ENV = argument.argv.slice(3);
+let dialectModule = '';
 
 const config = require('config');
+
+if (process.env.DIALECT) {
+    dialectModule = pg;
+}
+
 const sequelize = new Sequelize(
     config.database || process.env.DATABASE,
     config.username || process.env.USERNAME,
@@ -12,6 +18,7 @@ const sequelize = new Sequelize(
     {
         host: config.host || process.env.HOST,
         dialect: config.dialect || process.env.DIALECT,
+        dialectModule: dialectModule,
         // logging: false,
     }
 );
