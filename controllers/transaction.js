@@ -1,11 +1,11 @@
 const Product = require('../models/product');
 const Transaction = require('../models/transaction');
-const Cupon = require('../models/cupon');
 const State = require('../models/state');
 const Extra = require('../models/extra');
-const Fee = require('../models/fee');
 const User = require('../models/user');
 const { Op } = require('sequelize');
+// eslint-disable-next-line import/no-extraneous-dependencies
+const { differenceInCalendarDays } = require('date-fns');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const stripe = require('stripe')('sk_test_51PJCQdFBiJETLeRnI4a0tuJgzArGvSqzN8Y2PQaA7x79dx0eVgJMQENX255WHg6ypwLopaENc6nhs5aaVXB5qZCT00N7KhoDdT');
 
@@ -21,8 +21,8 @@ const getStateIdByName = async (stateName) => {
 
 exports.createTransaction = async (req, res) => {
     const {
- date, price, productId, cuponId, fees, extras
-} = req.body;
+        date_start, date_end, date, productId
+    } = req.body;
 
     const loggedUser = req.session.user;
     if (!loggedUser) {
@@ -39,27 +39,17 @@ exports.createTransaction = async (req, res) => {
             return res.status(404).json({ error: 'Product not found' });
         }
 
-        const ownerUserId = product.UserId
+        const days = differenceInCalendarDays(new Date(date_end), new Date(date_start)) + 1;
+        const price = product.price_day * days;
+
+        const ownerUserId = product.UserId;
 
         const stateId = await getStateIdByName('pending');
 
-        const cupon = cuponId ? await Cupon.findByPk(cuponId) : null;
-        if (cuponId && !cupon) {
-            return res.status(404).json({ error: 'Cupon not found' });
-        }
-
-        const feeRecords = fees ? await Fee.findAll({ where: { id: fees } }) : [];
-        if (fees && feeRecords.length !== fees.length) {
-            return res.status(404).json({ error: 'One or more fees not found' });
-        }
-
-        const extraRecords = extras ? await Extra.findAll({ where: { id: extras } }) : [];
-        if (extras && extraRecords.length !== extras.length) {
-            return res.status(404).json({ error: 'One or more extras not found' });
-        }
-
         const transactionLog = {
             date,
+            date_start,
+            date_end,
             price,
             renterUserId,
             ownerUserId,
@@ -77,24 +67,9 @@ exports.createTransaction = async (req, res) => {
                 id: stateId,
                 name: 'pending'
             },
-            cupon: cupon ? {
-                id: cupon.id,
-                name: cupon.name,
-                value: cupon.value,
-                percentage: cupon.percentage,
-                availability: cupon.availability
-            } : null,
-            fees: feeRecords.map((fee) => ({
-                id: fee.id,
-                name: fee.name,
-                value: fee.value,
-                percentage: fee.percentage
-            })),
-            extras: extraRecords.map((extra) => ({
-                id: extra.id,
-                name: extra.name,
-                value: extra.value
-            }))
+            cupon: null,
+            fees: null,
+            extras: null,
         };
 
         const transaction = await Transaction.create({
@@ -105,18 +80,9 @@ exports.createTransaction = async (req, res) => {
             log: transactionLog,
             ProductId: productId,
             StateId: stateId,
-            CuponId: cuponId,
-            fees: feeRecords.map((fee) => ({
-                id: fee.id,
-                name: fee.name,
-                value: fee.value,
-                percentage: fee.percentage
-            })),
-            extras: extraRecords.map((extra) => ({
-                id: extra.id,
-                name: extra.name,
-                value: extra.value
-            }))
+            CuponId: null,
+            fees: null,
+            extras: null
         });
 
         res.status(201).json(transaction);
@@ -165,6 +131,46 @@ exports.setTransactionApproved = async (req, res) => {
     }
 };
 
+exports.setTransactionInTransit = async (req, res) => {
+    const { transactionId } = req.params;
+
+    try {
+        const stateId = await getStateIdByName('in transit');
+        const transaction = await Transaction.findByPk(transactionId);
+
+        if (!transaction) {
+            return res.status(404).json({ error: 'Transaction not found' });
+        }
+
+        transaction.StateId = stateId;
+        await transaction.save();
+
+        res.json({ transaction_id: transaction.id, state_id: transaction.StateId });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.setTransactionInUse = async (req, res) => {
+    const { transactionId } = req.params;
+
+    try {
+        const stateId = await getStateIdByName('in use');
+        const transaction = await Transaction.findByPk(transactionId);
+
+        if (!transaction) {
+            return res.status(404).json({ error: 'Transaction not found' });
+        }
+
+        transaction.StateId = stateId;
+        await transaction.save();
+
+        res.json({ transaction_id: transaction.id, state_id: transaction.StateId });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 
 exports.getUserTransactions = async (req, res) => {
     const loggedUser = req.session.user;
@@ -186,10 +192,10 @@ exports.getUserTransactions = async (req, res) => {
                     { ownerUserId: user.id }
                 ]
             },
-            attributes: ['log'] // Only select the log attribute
+            attributes: ['log']
         });
 
-        const transactionLogs = transactions.map((transaction) => JSON.parse(transaction.log));
+        const transactionLogs = transactions.map((transaction) => transaction.log);
 
         res.json(transactionLogs);
     } catch (error) {
@@ -199,23 +205,28 @@ exports.getUserTransactions = async (req, res) => {
 
 
 exports.createCheckoutSession = async (req, res) => {
-    console.log('hello')
-    const { transactionId } = req.body;
+    const { transactionId, selectedExtras } = req.body;
 
     try {
-        const transaction = await Transaction.findByPk(transactionId);
+        const transaction = await Transaction.findByPk(transactionId, {
+            include: [Product]
+        });
         if (!transaction) {
             return res.status(404).json({ error: 'Transaction not found' });
         }
-        const parsedLog = JSON.parse(transaction.log);
-        console.log('product', parsedLog.product);
 
-        const product = await Product.findByPk(parsedLog.product.id);
-        if (!product) {
-            return res.status(404).json({ error: 'Product not found' });
+        let totalPrice = transaction.log.price;
+
+        if (selectedExtras && selectedExtras.length > 0) {
+            const extraRecords = await Extra.findAll({ where: { id: selectedExtras } });
+            extraRecords.forEach((extra) => {
+                totalPrice += extra.value;
+            });
         }
 
-        const api = 'http://localhost:3000'
+        req.session.selectedExtras = selectedExtras;
+
+        const api = 'http://localhost:3000';
 
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
@@ -223,22 +234,25 @@ exports.createCheckoutSession = async (req, res) => {
                 price_data: {
                     currency: 'eur',
                     product_data: {
-                        name: product.title,
-                        description: product.description,
-                        images: ['https://upload.wikimedia.org/wikipedia/pt/thumb/e/ed/Shrek%28personagem%29.jpg/150px-Shrek%28personagem%29.jpg'],
+                        name: transaction.log.product.title,
+                        description: transaction.log.product.description,
+                        images: ['https://example.com/product-image.jpg'],
                     },
-                    unit_amount: parsedLog.price * 100,
+                    unit_amount: totalPrice * 100,
                 },
                 quantity: 1,
             }],
             mode: 'payment',
-            success_url: `${api}/transaction/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${req.headers.origin}/shrek-store`,
+            success_url: `${api}/transaction/success?transactionId=${transactionId}&session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${req.headers.origin}/cancel-url`,
+            metadata: {
+                transactionId: transactionId // Store transactionId in metadata
+            }
         });
 
         res.json({ id: session.id });
     } catch (error) {
-        console.log(error)
+        console.error(error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -253,10 +267,33 @@ exports.stripeSuccess = async (req, res) => {
             return res.status(404).json({ error: 'Session not found' });
         }
 
-        const domain = 'http://localhost:3001'
 
-        res.redirect(`${domain}/transaction-success`);
+        const selectedExtras = req.session.selectedExtras || [];
+        const { transactionId } = session.metadata;
+
+        const transaction = await Transaction.findByPk(transactionId);
+        if (!transaction) {
+            return res.status(404).json({ error: 'Transaction not found' });
+        }
+
+        const extraRecords = await Extra.findAll({ where: { id: selectedExtras } });
+
+        transaction.extras = extraRecords.map((extra) => ({
+            id: extra.id,
+            name: extra.name,
+            value: extra.value
+        }));
+
+        await transaction.save();
+
+        req.session.selectedExtras = null;
+
+        const domain = 'http://localhost:3001';
+        console.log(session.metadata)
+
+        res.redirect(`${domain}/transaction-success`)
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: error.message });
     }
 };

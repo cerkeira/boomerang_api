@@ -75,6 +75,8 @@ const options = {
         './routes/location.js',
         './routes/favorite.js',
         './routes/google.js',
+        './routes/popular.js',
+        './routes/transaction.js',
     ],
 };
 
