@@ -1,5 +1,6 @@
 const User = require('../models/user');
 const Location = require('../models/location');
+const Product = require('../models/product');
 const { Sequelize } = require('sequelize');
 const bcrypt = require('bcrypt');
 const { validationResult } = require('express-validator');
@@ -31,6 +32,7 @@ exports.searchUsersByUsername = async (req, res) => {
 exports.getUser = async (req, res) => {
     let { id } = req.query;
     console.log('id', id);
+    let logged = false;
     if (!id) {
         const loggedUser = req.session.user;
         if (loggedUser) {
@@ -38,6 +40,7 @@ exports.getUser = async (req, res) => {
                 where: { username: loggedUser },
             });
             id = existingUser.id;
+            logged = true;
         } else {
             return res
                 .status(500)
@@ -45,13 +48,20 @@ exports.getUser = async (req, res) => {
         }
     }
     try {
-        const user = await User.findByPk(id, {
-            include: Location,
-        });
-        res.status(200).json(user);
+        if (logged) {
+            const user = await User.findByPk(id, {
+                include: [Location, Product],
+            });
+            res.status(200).json(user);
+        } else {
+            const user = await User.findByPk(id, {
+                include: Location,
+            });
+            res.status(200).json(user);
+        }
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Failed to fetch user.' });
+        res.status(500).json({ message: `Erro : ${error}` });
     }
 };
 
