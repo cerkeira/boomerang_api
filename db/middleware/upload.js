@@ -5,15 +5,15 @@ const fs = require('fs-extra');
 const { v4: uuidv4 } = require('uuid');
 
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
+    destination: async (req, file, cb) => {
         const uploadPath = 'uploads/uncompressed';
-        fs.mkdir(uploadPath, { recursive: true }, (err) => {
-            if (err) {
-                console.error('Error creating directory:', err);
-                return cb(err);
-            }
+        try {
+            await fs.ensureDir(uploadPath);
             cb(null, uploadPath);
-        });
+        } catch (err) {
+            console.error('Error creating directory:', err);
+            cb(err);
+        }
     },
     filename: (req, file, cb) => {
         cb(null, uuidv4() + path.extname(file.originalname));
@@ -31,9 +31,10 @@ const upload = multer({
         const mimetype = fileTypes.test(file.mimetype);
 
         if (mimetype && extname) {
-            return cb(null, true);
+            cb(null, true);
+        } else {
+            cb(new Error('Só são aceites ficheiros jpeg ou png.'));
         }
-        cb(new Error('Só são aceites ficheiros jpeg ou png.'));
     },
 }).array('productImage', 5);
 
@@ -73,7 +74,9 @@ const compressImages = async (req, res, next) => {
                     .then(async (buffer) => {
                         await fs.promises.writeFile(compressedFilePath, buffer);
                     })
-                    .catch((err) => console.error('Error during image compression:', err));
+                    .catch((err) =>
+                        console.error('Error during image compression:', err)
+                    );
             })
         );
         deleteUncompressed();
