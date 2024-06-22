@@ -55,11 +55,10 @@ exports.publishProduct = async (req, res) => {
             GradeId,
         } = req.body;
 
-        // const images =
-        //     req.files && req.files.length > 0
-        //         ? req.files.map((file) => `compressed-${file.filename}`)
-        //         : [];
-        console.log('Uploaded files:', uploadedFiles);
+        const images =
+            req.files && req.files.length > 0
+                ? req.files.map((file) => `compressed-${file.filename}`)
+                : [];
 
         const newProduct = await Product.create({
             title,
@@ -74,7 +73,7 @@ exports.publishProduct = async (req, res) => {
             ColorId,
             GradeId,
             UserId: user.id,
-            images: uploadedFiles.map((file) => file.compressed),
+            productImage: images,
         });
 
         res.status(201).json(newProduct);

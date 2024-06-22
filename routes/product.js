@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/product');
 const { check, validationResult } = require('express-validator');
-const uploadMiddleware = require('../db/middleware/upload');
+const { uploadMiddleware, compressImages } = require('../db/middleware/upload');
 /**
  * @swagger
  * /product:
@@ -85,6 +85,7 @@ router.get('/', productController.getProduct);
 router.post(
     '/',
     uploadMiddleware,
+    compressImages,
     [
         check('title').notEmpty().withMessage('Title is required'),
         check('description').notEmpty().withMessage('Description is required'),
@@ -160,6 +161,7 @@ router.post(
 router.put(
     '/',
     uploadMiddleware,
+    compressImages,
     [
         check('id').isInt().withMessage('Product ID must be an integer'),
         check('title').notEmpty().withMessage('Title is required'),

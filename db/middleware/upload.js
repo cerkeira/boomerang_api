@@ -1,41 +1,86 @@
-// db/middleware/uploadMiddleware.js
 const multer = require('multer');
 const sharp = require('sharp');
-const streamifier = require('streamifier');
-const { uploadBlob } = require('@vercel/blob');
+const path = require('path');
+const fs = require('fs-extra');
+const { v4: uuidv4 } = require('uuid');
 
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadPath = 'uploads/uncompressed';
+        fs.ensureDir(uploadPath);
+        console.log(`Directory created: ${uploadPath}`);
+        cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+        cb(null, uuidv4() + path.extname(file.originalname));
+    },
+});
 
-const uploadToVercelBlob = async (file) => {
-    const stream = streamifier.createReadStream(file.buffer);
-    const blob = await uploadBlob({
-        name: `uploads/uncompressed/${file.originalname}`,
-        body: stream,
-        size: file.size,
-        contentType: file.mimetype,
-    });
-    return blob.url;
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 15 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        const fileTypes = /jpeg|jpg|png/;
+        const extname = fileTypes.test(
+            path.extname(file.originalname).toLowerCase()
+        );
+        const mimetype = fileTypes.test(file.mimetype);
+
+        if (mimetype && extname) {
+            return cb(null, true);
+        }
+        cb(new Error('Só são aceites ficheiros jpeg ou png.'));
+    },
+}).array('productImage', 5);
+
+const deleteUncompressed = () => {
+    if (fs.existsSync('uploads/uncompressed/')) {
+        fs.emptyDirSync('uploads/uncompressed/', (err) => {
+            if (err) {
+                console.error(`Error removing file: ${err}`);
+                return;
+            }
+
+            return console.log(
+                'Uncompressed files have been successfully removed.'
+            );
+        });
+    }
 };
 
-const compressAndUpload = async (file) => {
-    const compressedBuffer = await sharp(file.buffer)
-        .resize({ width: 600, height: 600, fit: 'inside' })
-        .toBuffer();
+const compressImages = (req, res, next) => {
+    if (!req.files || req.files.length === 0) return next();
 
-    const stream = streamifier.createReadStream(compressedBuffer);
-    const blob = await uploadBlob({
-        name: `uploads/compressed-${file.originalname}`,
-        body: stream,
-        size: compressedBuffer.length,
-        contentType: file.mimetype,
-    });
+    try {
+        Promise.all(
+            req.files.map((file) => {
+                const filePath = path.join(
+                    'uploads/uncompressed',
+                    file.filename
+                );
+                const compressedFilePath = path.join(
+                    'uploads',
+                    `compressed-${file.filename}`
+                );
 
-    return blob.url;
+                sharp(filePath)
+                    .resize({ width: 600, height: 600, fit: 'inside' })
+                    .toBuffer()
+                    .then((buffer) => {
+                        fs.promises.writeFile(compressedFilePath, buffer);
+                    })
+                    .catch((err) => console.error('Error during image compression:', err));
+            })
+        );
+    } catch (err) {
+        console.error('Error during image processing:', err);
+        return res.status(500).json({ message: 'Failed to process images.' });
+    }
+    next();
 };
 
 const uploadMiddleware = (req, res, next) => {
-    upload.array('productImage', 5)(req, res, async (err) => {
+    upload(req, res, (err) => {
         if (err instanceof multer.MulterError) {
             if (err.code === 'LIMIT_FILE_SIZE') {
                 return res.status(400).json({
@@ -47,22 +92,8 @@ const uploadMiddleware = (req, res, next) => {
         if (err) {
             return res.status(400).json({ message: err.message });
         }
-
-        try {
-            const urls = await Promise.all(
-                req.files.map(async (file) => {
-                    const url = await uploadToVercelBlob(file);
-                    const compressedUrl = await compressAndUpload(file);
-                    return { original: url, compressed: compressedUrl };
-                })
-            );
-            req.uploadedFiles = urls;
-            next();
-        } catch (err) {
-            console.error('Error during file upload:', err);
-            return res.status(500).json({ message: 'Failed to upload files.' });
-        }
+        next();
     });
 };
 
-module.exports = uploadMiddleware;
+module.exports = { uploadMiddleware, compressImages, deleteUncompressed };
