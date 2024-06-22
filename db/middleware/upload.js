@@ -7,14 +7,13 @@ const { v4: uuidv4 } = require('uuid');
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const uploadPath = 'uploads/uncompressed';
-        if (!fs.existsSync(uploadPath)) {
-            try {
-                fs.mkdirSync(uploadPath, { recursive: true });
-            } catch (err) {
+        fs.mkdir(uploadPath, { recursive: true }, (err) => {
+            if (err) {
                 console.error('Error creating directory:', err);
+                return cb(err);
             }
-        }
-        cb(null, uploadPath);
+            cb(null, uploadPath);
+        });
     },
     filename: (req, file, cb) => {
         cb(null, uuidv4() + path.extname(file.originalname));
@@ -53,12 +52,12 @@ const deleteUncompressed = () => {
     }
 };
 
-const compressImages = (req, res, next) => {
+const compressImages = async (req, res, next) => {
     if (!req.files || req.files.length === 0) return next();
 
     try {
-        Promise.all(
-            req.files.map((file) => {
+        await Promise.all(
+            req.files.map(async (file) => {
                 const filePath = path.join(
                     'uploads/uncompressed',
                     file.filename
@@ -68,11 +67,11 @@ const compressImages = (req, res, next) => {
                     `compressed-${file.filename}`
                 );
 
-                sharp(filePath)
+                await sharp(filePath)
                     .resize({ width: 600, height: 600, fit: 'inside' })
                     .toBuffer()
-                    .then((buffer) => {
-                        fs.promises.writeFile(compressedFilePath, buffer);
+                    .then(async (buffer) => {
+                        await fs.promises.writeFile(compressedFilePath, buffer);
                     })
                     .catch((err) => console.error('Error during image compression:', err));
             })
