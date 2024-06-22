@@ -51,7 +51,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // app.use('/', (req, res) => res.status(200).json({ message: 'Esta é a API da Boomerang' }));
-app.use('/api/upload', upload.single('productImage'), async (req, res) => {
+app.use('/api/upload', async (req, res) => {
     try {
         const stream = streamifier.createReadStream(req.file.buffer);
         const blob = await uploadBlob({

@@ -6,7 +6,7 @@ const { uploadBlob } = require('@vercel/blob');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-export const uploadMiddleware = (req, res, next) => {
+const uploadMiddleware = (req, res, next) => {
     upload.single('productImage')(req, res, (err) => {
         if (err) {
             return res.status(500).json({ error: 'Failed to upload file' });
@@ -15,7 +15,7 @@ export const uploadMiddleware = (req, res, next) => {
     });
 };
 
-export const handleUpload = async (req, res) => {
+const handleUpload = async (req, res) => {
     try {
         const stream = streamifier.createReadStream(req.file.buffer);
         const blob = await uploadBlob({
@@ -47,3 +47,5 @@ export const handleUpload = async (req, res) => {
         res.status(500).json({ error: 'Failed to upload to Vercel Blob' });
     }
 };
+
+module.exports = { uploadMiddleware, handleUpload };
