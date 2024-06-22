@@ -4,6 +4,8 @@ const Product = require('../models/product');
 const { Sequelize } = require('sequelize');
 const bcrypt = require('bcrypt');
 const { validationResult } = require('express-validator');
+const { put } = require('@vercel/blob');
+const { v4: uuidv4 } = require('uuid');
 
 exports.searchUsersByUsername = async (req, res) => {
     try {
@@ -70,14 +72,22 @@ exports.getUser = async (req, res) => {
     }
 };
 
-
 exports.registerUser = async (req, res) => {
     try {
         const { username, name, email, gender, password, location } = req.body;
         const saltRounds = 10;
         const passwordHash = await bcrypt.hash(password, saltRounds);
 
-        const profileImagePath = req.file ? req.file.filename : null;
+        let profileImagePath = null;
+        if (req.file) {
+            const filename = `compressed-${uuidv4()}-${req.file.originalname}`;
+            const blob = await put(filename, req.file.buffer, {
+                access: 'public',
+                mimetype: req.file.mimetype,
+                token: process.env.BLOB_READ_WRITE_TOKEN,
+            });
+            profileImagePath = blob.url;
+        }
 
         const newUser = await User.create({
             username,
@@ -180,8 +190,17 @@ exports.editUser = async (req, res) => {
         }
 
         const { username, name, email, gender, bio } = req.body;
-        const profileImagePath = req.file ? req.file.filename : null;
 
+        let profileImagePath = null;
+        if (req.file) {
+            const filename = `compressed-${uuidv4()}-${req.file.originalname}`;
+            const blob = await put(filename, req.file.buffer, {
+                access: 'public',
+                mimetype: req.file.mimetype,
+                token: process.env.BLOB_READ_WRITE_TOKEN,
+            });
+            profileImagePath = blob.url;
+        }
         await User.update(
             {
                 username,

@@ -5,7 +5,6 @@ const session = require('express-session');
 const cors = require('cors');
 const passport = require('passport');
 const bodyParser = require('body-parser');
-const { deleteUncompressed } = require('./db/middleware/upload');
 const app = express();
 const sequelize = require('./db');
 const userRoutes = require('./routes/user');
@@ -19,11 +18,6 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 const googleRoutes = require('./routes/google');
 const PORT = 3000;
-
-const streamifier = require('streamifier');
-const sharp = require('sharp');
-const { uploadBlob } = require('@vercel/blob');
-const { upload } = require('./api/upload');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -42,47 +36,36 @@ app.use(
         credentials: true,
     })
 );
-deleteUncompressed();
 
 app.use(express.static('uploads'));
+
+// route de teste de upload de ficheiros
+// app.post('/api/upload', async (req, res) => {
+//     try {
+//         const filename = req.query.filename;
+
+//         if (!filename) {
+//             return res.status(400).json({ error: 'Filename is required' });
+//         }
+
+//         const blob = await put(filename, req.body, {
+//             access: 'public',
+//             token: process.env.BLOB_READ_WRITE_TOKEN,
+//         });
+
+//         return res.json(blob);
+//     } catch (error) {
+//         console.error('Error uploading file:', error);
+//         return res.status(500).json({ error: 'Internal Server Error' });
+//     }
+// });
 
 require('./db/passport');
 app.use(passport.initialize());
 app.use(passport.session());
 
+// route de teste
 // app.use('/', (req, res) => res.status(200).json({ message: 'Esta é a API da Boomerang' }));
-app.use('/api/upload', async (req, res) => {
-    try {
-        const stream = streamifier.createReadStream(req.file.buffer);
-        const blob = await uploadBlob({
-            name: `uploads/uncompressed/${req.file.originalname}`,
-            body: stream,
-            size: req.file.size,
-            contentType: req.file.mimetype,
-        });
-
-        const compressedBuffer = await sharp(req.file.buffer)
-            .resize({ width: 600, height: 600, fit: 'inside' })
-            .toBuffer();
-
-        const compressedStream = streamifier.createReadStream(compressedBuffer);
-        const compressedBlob = await uploadBlob({
-            name: `uploads/compressed-${req.file.originalname}`,
-            body: compressedStream,
-            size: compressedBuffer.length,
-            contentType: req.file.mimetype,
-        });
-
-        res.status(200).json({
-            message: 'File uploaded successfully',
-            url: blob.url,
-            compressedUrl: compressedBlob.url,
-        });
-    } catch (error) {
-        console.error('Error uploading to Vercel Blob:', error);
-        res.status(500).json({ error: 'Failed to upload to Vercel Blob' });
-    }
-});
 
 app.use('/user', userRoutes);
 app.use('/popular', popularRoutes);

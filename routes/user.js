@@ -3,9 +3,9 @@ const router = express.Router();
 const userController = require('../controllers/user');
 const { check, validationResult } = require('express-validator');
 const {
-    uploadProfileMiddleware,
-    compressProfileImage,
-} = require('../db/middleware/uploadprofile');
+    uploadSingle,
+    compressSingleImage,
+} = require('../db/middleware/upload');
 
 /**
  * @swagger
@@ -119,8 +119,8 @@ router.get('/search', userController.searchUsersByUsername);
  */
 router.post(
     '/register',
-    uploadProfileMiddleware,
-    compressProfileImage,
+    uploadSingle,
+    compressSingleImage,
     [
         check('username').notEmpty().withMessage('Username is required'),
         check('name').notEmpty().withMessage('Name is required'),
@@ -273,12 +273,7 @@ router.delete('/', userController.deleteUser);
  *       500:
  *         description: Erro a editar utilizador
  */
-router.put(
-    '/',
-    uploadProfileMiddleware,
-    compressProfileImage,
-    userController.editUser
-);
+router.put('/', uploadSingle, compressSingleImage, userController.editUser);
 
 module.exports = router;
 
