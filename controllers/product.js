@@ -58,17 +58,15 @@ exports.publishProduct = async (req, res) => {
         } = req.body;
 
         const images = [];
-        let count = 0;
         if (req.files && req.files.length > 0) {
             for (const file of req.files) {
                 const filename = `compressed-${file.filename}`;
                 const blob = await put(filename, file.buffer, {
                     access: 'public',
-                    mimetype: req.files[count].mimetype,
+                    mimetype: file.mimetype,
                     token: process.env.BLOB_READ_WRITE_TOKEN,
                 });
                 images.push(blob.url);
-                count++;
             }
         }
 

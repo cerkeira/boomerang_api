@@ -30,6 +30,11 @@ module.exports = {
         'no-unused-vars': 'off',
         'import/no-unresolved': 'off',
         'array-callback-return': 'off',
+        'no-restricted-syntax': 'off',
+        'no-await-in-loop': 'off',
+        'no-plusplus': 'off',
+        'no-param-reassign': 'off',
+        'no-unused-expressions': 'off',
     },
     ignorePatterns: ['migrations/', 'seeders/'],
 };
