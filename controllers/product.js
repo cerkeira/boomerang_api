@@ -55,10 +55,11 @@ exports.publishProduct = async (req, res) => {
             GradeId,
         } = req.body;
 
-        const images =
-            req.files && req.files.length > 0
-                ? req.files.map((file) => `compressed-${file.filename}`)
-                : [];
+        // const images =
+        //     req.files && req.files.length > 0
+        //         ? req.files.map((file) => `compressed-${file.filename}`)
+        //         : [];
+        console.log('Uploaded files:', uploadedFiles);
 
         const newProduct = await Product.create({
             title,
@@ -73,7 +74,7 @@ exports.publishProduct = async (req, res) => {
             ColorId,
             GradeId,
             UserId: user.id,
-            productImage: images,
+            images: uploadedFiles.map((file) => file.compressed),
         });
 
         res.status(201).json(newProduct);
@@ -213,7 +214,16 @@ exports.getForm = async (req, res) => {
 
 exports.searchProducts = async (req, res) => {
     try {
-        const { name, size, color, category, gender, brand, orderBy, orderDirection } = req.query;
+        const {
+            name,
+            size,
+            color,
+            category,
+            gender,
+            brand,
+            orderBy,
+            orderDirection,
+        } = req.query;
 
         const whereCondition = {};
         const orderCondition = [];
@@ -254,7 +264,10 @@ exports.searchProducts = async (req, res) => {
             };
         }
 
-        if (orderBy && (orderDirection === 'ASC' || orderDirection === 'DESC')) {
+        if (
+            orderBy &&
+            (orderDirection === 'ASC' || orderDirection === 'DESC')
+        ) {
             orderCondition.push([orderBy, orderDirection]);
         }
 
