@@ -70,9 +70,7 @@ const compressImages = (req, res, next) => {
                     .then((buffer) => {
                         fs.promises.writeFile(compressedFilePath, buffer);
                     })
-                    .catch((err) =>
-                        console.error('Error during image compression:', err)
-                    );
+                    .catch((err) => console.error('Error during image compression:', err));
             })
         );
     } catch (err) {
