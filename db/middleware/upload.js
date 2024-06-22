@@ -74,9 +74,7 @@ const compressImages = async (req, res, next) => {
                     .then(async (buffer) => {
                         await fs.promises.writeFile(compressedFilePath, buffer);
                     })
-                    .catch((err) =>
-                        console.error('Error during image compression:', err)
-                    );
+                    .catch((err) => console.error('Error during image compression:', err));
             })
         );
         deleteUncompressed();
