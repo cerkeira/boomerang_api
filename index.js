@@ -21,6 +21,8 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 const googleRoutes = require('./routes/google');
 const PORT = 3000;
+const { uploadMiddleware, handleUpload } = require('./db/middleware/upload');
+const router = express.Router();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -48,6 +50,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // app.use('/', (req, res) => res.status(200).json({ message: 'Esta é a API da Boomerang' }));
+app.use('/api/upload', router.post('/', uploadMiddleware, handleUpload));
+
 app.use('/user', userRoutes);
 app.use('/popular', popularRoutes);
 app.use('/transaction', transactionRoutes);
