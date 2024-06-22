@@ -19,8 +19,11 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 const googleRoutes = require('./routes/google');
 const PORT = 3000;
-const { uploadMiddleware, handleUpload } = require('./db/middleware/upload');
-const router = express.Router();
+
+const streamifier = require('streamifier');
+const sharp = require('sharp');
+const { uploadBlob } = require('@vercel/blob');
+const { upload } = require('./api/upload');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -48,7 +51,38 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // app.use('/', (req, res) => res.status(200).json({ message: 'Esta é a API da Boomerang' }));
-app.use('/api/upload', router.post('/', uploadMiddleware, handleUpload));
+app.use('/api/upload', upload.single('productImage'), async (req, res) => {
+    try {
+        const stream = streamifier.createReadStream(req.file.buffer);
+        const blob = await uploadBlob({
+            name: `uploads/uncompressed/${req.file.originalname}`,
+            body: stream,
+            size: req.file.size,
+            contentType: req.file.mimetype,
+        });
+
+        const compressedBuffer = await sharp(req.file.buffer)
+            .resize({ width: 600, height: 600, fit: 'inside' })
+            .toBuffer();
+
+        const compressedStream = streamifier.createReadStream(compressedBuffer);
+        const compressedBlob = await uploadBlob({
+            name: `uploads/compressed-${req.file.originalname}`,
+            body: compressedStream,
+            size: compressedBuffer.length,
+            contentType: req.file.mimetype,
+        });
+
+        res.status(200).json({
+            message: 'File uploaded successfully',
+            url: blob.url,
+            compressedUrl: compressedBlob.url,
+        });
+    } catch (error) {
+        console.error('Error uploading to Vercel Blob:', error);
+        res.status(500).json({ error: 'Failed to upload to Vercel Blob' });
+    }
+});
 
 app.use('/user', userRoutes);
 app.use('/popular', popularRoutes);
