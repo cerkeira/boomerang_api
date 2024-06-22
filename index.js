@@ -39,6 +39,7 @@ app.use(
         credentials: true,
     })
 );
+deleteUncompressed();
 
 app.use(express.static('uploads'));
 

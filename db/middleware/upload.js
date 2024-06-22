@@ -5,15 +5,12 @@ const fs = require('fs-extra');
 const { v4: uuidv4 } = require('uuid');
 
 const storage = multer.diskStorage({
-    destination: async (req, file, cb) => {
+    destination: (req, file, cb) => {
         const uploadPath = 'uploads/uncompressed';
-        try {
-            await fs.ensureDir(uploadPath);
-            cb(null, uploadPath);
-        } catch (err) {
-            console.error('Error creating directory:', err);
-            cb(err);
-        }
+        // if (!fs.existsSync(uploadPath)) {
+        //     fs.mkdirSync(uploadPath);
+        // }
+        cb(null, uploadPath);
     },
     filename: (req, file, cb) => {
         cb(null, uuidv4() + path.extname(file.originalname));
@@ -31,10 +28,9 @@ const upload = multer({
         const mimetype = fileTypes.test(file.mimetype);
 
         if (mimetype && extname) {
-            cb(null, true);
-        } else {
-            cb(new Error('Só são aceites ficheiros jpeg ou png.'));
+            return cb(null, true);
         }
+        cb(new Error('Só são aceites ficheiros jpeg ou png.'));
     },
 }).array('productImage', 5);
 
@@ -53,12 +49,12 @@ const deleteUncompressed = () => {
     }
 };
 
-const compressImages = async (req, res, next) => {
+const compressImages = (req, res, next) => {
     if (!req.files || req.files.length === 0) return next();
 
     try {
-        await Promise.all(
-            req.files.map(async (file) => {
+        Promise.all(
+            req.files.map((file) => {
                 const filePath = path.join(
                     'uploads/uncompressed',
                     file.filename
@@ -68,16 +64,15 @@ const compressImages = async (req, res, next) => {
                     `compressed-${file.filename}`
                 );
 
-                await sharp(filePath)
+                sharp(filePath)
                     .resize({ width: 600, height: 600, fit: 'inside' })
                     .toBuffer()
-                    .then(async (buffer) => {
-                        await fs.promises.writeFile(compressedFilePath, buffer);
+                    .then((buffer) => {
+                        fs.promises.writeFile(compressedFilePath, buffer);
                     })
                     .catch((err) => console.error('Error during image compression:', err));
             })
         );
-        deleteUncompressed();
     } catch (err) {
         console.error('Error during image processing:', err);
         return res.status(500).json({ message: 'Failed to process images.' });
