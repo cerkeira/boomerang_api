@@ -6,10 +6,10 @@ const { v4: uuidv4 } = require('uuid');
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const uploadPath = 'uploads/uncompressed';
-        // if (!fs.existsSync(uploadPath)) {
-        //     fs.mkdirSync(uploadPath);
-        // }
+        const uploadPath = '../../uploads/uncompressed';
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath);
+        }
         cb(null, uploadPath);
     },
     filename: (req, file, cb) => {
@@ -35,8 +35,8 @@ const upload = multer({
 }).array('productImage', 5);
 
 const deleteUncompressed = () => {
-    if (fs.existsSync('uploads/uncompressed')) {
-        fs.emptyDirSync('uploads/uncompressed/', (err) => {
+    if (fs.existsSync('../../uploads/uncompressed/')) {
+        fs.emptyDirSync('../../uploads/uncompressed/', (err) => {
             if (err) {
                 console.error(`Error removing file: ${err}`);
                 return;
@@ -56,11 +56,11 @@ const compressImages = (req, res, next) => {
         Promise.all(
             req.files.map((file) => {
                 const filePath = path.join(
-                    'uploads/uncompressed',
+                    '../../uploads/uncompressed',
                     file.filename
                 );
                 const compressedFilePath = path.join(
-                    'uploads',
+                    '../../uploads',
                     `compressed-${file.filename}`
                 );
 
