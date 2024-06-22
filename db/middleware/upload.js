@@ -77,6 +77,7 @@ const compressImages = (req, res, next) => {
                     .catch((err) => console.error('Error during image compression:', err));
             })
         );
+        deleteUncompressed();
     } catch (err) {
         console.error('Error during image processing:', err);
         return res.status(500).json({ message: 'Failed to process images.' });
