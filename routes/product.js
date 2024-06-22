@@ -162,11 +162,7 @@ router.put(
     '/',
     uploadMiddleware,
     compressImages,
-    [
-        check('id').isInt().withMessage('Product ID must be an integer'),
-        check('title').notEmpty().withMessage('Title is required'),
-        check('description').notEmpty().withMessage('Description is required'),
-    ],
+    [check('id').isInt().withMessage('Product ID must be an integer')],
     async (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {

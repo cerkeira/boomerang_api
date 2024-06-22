@@ -6,7 +6,6 @@ const cors = require('cors');
 const passport = require('passport');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const bodyParser = require('body-parser');
-const { deleteUncompressed } = require('./db/middleware/upload');
 const app = express();
 const sequelize = require('./db');
 const userRoutes = require('./routes/user');
@@ -21,8 +20,6 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 const googleRoutes = require('./routes/google');
 const PORT = 3000;
-const { uploadMiddleware, handleUpload } = require('./db/middleware/upload');
-const router = express.Router();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -41,16 +38,36 @@ app.use(
         credentials: true,
     })
 );
-deleteUncompressed();
 
 app.use(express.static('uploads'));
+
+// route de teste de upload de ficheiros
+// app.post('/api/upload', async (req, res) => {
+//     try {
+//         const filename = req.query.filename;
+
+//         if (!filename) {
+//             return res.status(400).json({ error: 'Filename is required' });
+//         }
+
+//         const blob = await put(filename, req.body, {
+//             access: 'public',
+//             token: process.env.BLOB_READ_WRITE_TOKEN,
+//         });
+
+//         return res.json(blob);
+//     } catch (error) {
+//         console.error('Error uploading file:', error);
+//         return res.status(500).json({ error: 'Internal Server Error' });
+//     }
+// });
 
 require('./db/passport');
 app.use(passport.initialize());
 app.use(passport.session());
 
+// route de teste
 // app.use('/', (req, res) => res.status(200).json({ message: 'Esta é a API da Boomerang' }));
-app.use('/api/upload', router.post('/', uploadMiddleware, handleUpload));
 
 app.use('/user', userRoutes);
 app.use('/popular', popularRoutes);

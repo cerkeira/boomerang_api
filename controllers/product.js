@@ -6,6 +6,7 @@ const Grade = require('../models/grade');
 const User = require('../models/user');
 const { Sequelize } = require('sequelize');
 const Favorite = require('../models/favorite');
+const { put } = require('@vercel/blob');
 
 exports.getProduct = async (req, res) => {
     try {
@@ -36,6 +37,7 @@ exports.publishProduct = async (req, res) => {
         if (!loggedUser) {
             return res.status(403).json({ message: 'User not found' });
         }
+
         const user = await User.findOne({ where: { username: loggedUser } });
 
         if (!user) {
@@ -55,10 +57,18 @@ exports.publishProduct = async (req, res) => {
             GradeId,
         } = req.body;
 
-        const images =
-            req.files && req.files.length > 0
-                ? req.files.map((file) => `compressed-${file.filename}`)
-                : [];
+        const images = [];
+        if (req.files && req.files.length > 0) {
+            for (const file of req.files) {
+                const filename = `compressed-${file.filename}`;
+                const blob = await put(filename, file.buffer, {
+                    access: 'public',
+                    mimetype: file.mimetype,
+                    token: process.env.BLOB_READ_WRITE_TOKEN,
+                });
+                images.push(blob.url);
+            }
+        }
 
         const newProduct = await Product.create({
             title,
@@ -75,7 +85,6 @@ exports.publishProduct = async (req, res) => {
             UserId: user.id,
             productImage: images,
         });
-
         res.status(201).json(newProduct);
     } catch (error) {
         console.error('Error during product creation:', error);
@@ -152,10 +161,18 @@ exports.editProduct = async (req, res) => {
                 .json({ message: `${user} can't edit ${existingProduct}` });
         }
 
-        const images =
-            req.files && req.files.length > 0
-                ? req.files.map((file) => `compressed-${file.filename}`)
-                : [];
+        const images = [];
+        if (req.files && req.files.length > 0) {
+            for (const file of req.files) {
+                const filename = `compressed-${file.filename}`;
+                const blob = await put(filename, file.buffer, {
+                    access: 'public',
+                    mimetype: file.mimetype,
+                    token: process.env.BLOB_READ_WRITE_TOKEN,
+                });
+                images.push(blob.url);
+            }
+        }
 
         await existingProduct.update({
             title,
