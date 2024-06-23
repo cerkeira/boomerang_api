@@ -1,7 +1,7 @@
 const Notification = require('../models/notification');
-const User = require('../models/User'); // Corrected capitalization
-const Transaction = require('../models/Transaction');
-const Product = require('../models/Product'); // Assuming this is your product model
+const User = require('../models/user');
+const Transaction = require('../models/transaction');
+const Product = require('../models/product');
 
 exports.getUserNotifications = async (req, res) => {
     try {
