@@ -1,16 +1,19 @@
 const User = require('./user');
 const Location = require('./location');
 const Transaction = require('./transaction');
-const Cupon = require('./cupon');
+const Notification = require('./notification');
 const Product = require('./product');
 const Favorite = require('./favorite');
 
 const defineAssociations = () => {
     User.hasMany(Location, { onDelete: 'CASCADE' });
     Location.belongsTo(User);
-    Transaction.belongsTo(Cupon);
-    Cupon.hasOne(Transaction);
-    Transaction.belongsTo(Product);
+    Notification.belongsTo(Transaction);
+    Notification.belongsTo(User);
+    Notification.belongsTo(Product);
+    Transaction.hasMany(Notification);
+    Product.hasMany(Notification);
+    User.hasMany(Notification);
     Product.hasMany(Transaction);
     User.belongsToMany(Product, { through: Favorite, foreignKey: 'userId' });
     Product.belongsToMany(User, { through: Favorite, foreignKey: 'productId' });

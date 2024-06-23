@@ -31,7 +31,7 @@ exports.createTransaction = async (req, res) => {
         }
         
         const { price_day } = product;
-        const state = 'approved';
+        const state = 'pending';
 
         const ownerUserId = product.UserId;
 
@@ -230,6 +230,7 @@ exports.createCheckoutSession = async (req, res) => {
 
         req.session.selectedExtras = selectedExtras;
 
+        //const api = 'http://localhost:3000';
 
         const sessionData = {
             payment_method_types: ['card'],

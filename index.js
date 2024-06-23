@@ -11,6 +11,7 @@ const sequelize = require('./db');
 const userRoutes = require('./routes/user');
 const popularRoutes = require('./routes/popular');
 const transactionRoutes = require('./routes/transaction');
+const notificationRoutes = require('./routes/notification');
 const productRoutes = require('./routes/product');
 const favoriteRoutes = require('./routes/favorite');
 const locationRoutes = require('./routes/location');
@@ -75,6 +76,7 @@ app.use('/transaction', transactionRoutes);
 app.use('/product', productRoutes);
 app.use('/favorite', favoriteRoutes);
 app.use('/location', locationRoutes);
+app.use('/notification', notificationRoutes);
 app.use('/google', googleRoutes);
 app.use('/extra', extraRoutes);
 
