@@ -30,6 +30,10 @@ const Notification = sequelize.define('Notification', {
         type: DataTypes.INTEGER,
         allowNull: true
     },
+    FavoriteId: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
 });
 
 

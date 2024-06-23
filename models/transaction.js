@@ -40,7 +40,7 @@ const Transaction = sequelize.define('Transaction', {
         allowNull: true
     },
     state: {
-        type: DataTypes.ENUM('pending', 'approved', 'rejected', 'paid', 'canceled', 'shipping', 'transit', 'delivered', 'completed'),
+        type: DataTypes.ENUM('pending', 'approved', 'rejected', 'paid', 'cancelled', 'shipping', 'transit', 'delivered', 'completed'),
         allowNull: false
     },
 }, {
@@ -67,16 +67,42 @@ const Transaction = sequelize.define('Transaction', {
         },
         afterUpdate: async (transaction) => {
             try {
-                console.log(transaction.previous('state'))
-                console.log(transaction.state)
                 if (transaction.previous('state') !== 'approved' && transaction.state === 'approved') {
-                    console.log('in')
                     const item = await Product.findByPk(transaction.ProductId);
-
                     await Notification.create({
                         type: 'transaction',
-                        title: 'Pedido de aluguer aprovado',
-                        message: `O pedido de aluguer para o item ${item.title} foi aceite. Clica aqui para pagar agora ou cancelar o pedido`,
+                        title: 'Pedido de aluguer aceite',
+                        message: `O pedido de aluguer para o item ${item.title} foi aceite pelo promotor. Clica aqui para pagar agora ou cancelar o pedido`,
+                        TransactionId: transaction.id,
+                        UserId: transaction.renterUserId,
+                        ProductId: transaction.ProductId,
+                    });
+                } else if (transaction.previous('state') !== 'rejected' && transaction.state === 'rejected') {
+                    const item = await Product.findByPk(transaction.ProductId);
+                    await Notification.create({
+                        type: 'transaction',
+                        title: 'Pedido de aluguer rejeitado',
+                        message: `O pedido de aluguer para o item ${item.title} foi rejeitado pelo promotor.`,
+                        TransactionId: transaction.id,
+                        UserId: transaction.renterUserId,
+                        ProductId: transaction.ProductId,
+                    });
+                } else if (transaction.previous('state') !== 'paid' && transaction.state === 'paid') {
+                    const item = await Product.findByPk(transaction.ProductId);
+                    await Notification.create({
+                        type: 'transaction',
+                        title: 'Pagamento recebido',
+                        message: `O pagamento pelo aluguer do item ${item.title} foi recebido. Clique aqui para visualizar os detalhes da transação e instruções de envio.`,
+                        TransactionId: transaction.id,
+                        UserId: transaction.renterUserId,
+                        ProductId: transaction.ProductId,
+                    });
+                } else if (transaction.previous('state') !== 'cancelled' && transaction.state === 'cancelled') {
+                    const item = await Product.findByPk(transaction.ProductId);
+                    await Notification.create({
+                        type: 'transaction',
+                        title: 'Aluguer cancelado',
+                        message: `O aluguer do item ${item.title} foi cancelado pelo utilizador. Clique aqui para visualizar os detalhes da transação.`,
                         TransactionId: transaction.id,
                         UserId: transaction.renterUserId,
                         ProductId: transaction.ProductId,
