@@ -250,7 +250,7 @@ exports.createCheckoutSession = async (req, res) => {
             cancel_url: `${req.headers.origin}/cancel-url`,
             metadata: {
                 transactionId: transactionId,
-                renterUserAddress: renterUserAddress,
+                renterUserAddress: renterUserAddress.toString(),
                 totalPrice: totalPrice,
             }
         };
