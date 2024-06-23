@@ -12,7 +12,7 @@ exports.getPopularCategories = async (req, res) => {
                     Sequelize.literal(`(
                         SELECT COUNT(*)
                         FROM "Transactions" AS transaction
-                        WHERE (transaction.log::jsonb->'product'->>'ProductTypeId')::TEXT = "ProductTypes"."id"::TEXT
+                        WHERE transaction."ProductId" = "ProductTypes"."id"
                     )`),
                     'timesUsedCount'
                 ],
