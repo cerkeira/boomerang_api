@@ -230,7 +230,6 @@ exports.createCheckoutSession = async (req, res) => {
 
         req.session.selectedExtras = selectedExtras;
 
-        //const api = 'http://localhost:3000';
 
         const sessionData = {
             payment_method_types: ['card'],
