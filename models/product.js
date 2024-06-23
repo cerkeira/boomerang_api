@@ -43,7 +43,10 @@ const Product = sequelize.define('Product', {
                 : [];
         },
     },
+}, {
+    paranoid: true,
 });
+
 
 Product.belongsTo(Size);
 Product.belongsTo(ProductType);
