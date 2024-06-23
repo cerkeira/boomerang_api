@@ -175,7 +175,7 @@ router.put('/:transactionId/inUse', transactionController.setTransactionInUse);
  *       500:
  *         description: Error retrieving transactions
  */
-router.get('/', transactionController.getUserTransactions);
+router.get('/:transactionId?', transactionController.getUserTransactions);
 
 /**
  * @swagger
