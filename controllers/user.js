@@ -6,6 +6,7 @@ const bcrypt = require('bcrypt');
 const { validationResult } = require('express-validator');
 const { put } = require('@vercel/blob');
 const { v4: uuidv4 } = require('uuid');
+const Size = require('../models/size');
 
 exports.searchUsersByUsername = async (req, res) => {
     try {
@@ -60,6 +61,7 @@ exports.getUser = async (req, res) => {
         }
         const products = await Product.findAll({
             where: { UserId: id },
+            include: [{ model: Size, attributes: ['name'] }],
         });
 
         const userData = user.toJSON();
