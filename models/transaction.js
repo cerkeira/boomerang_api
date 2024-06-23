@@ -1,6 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../db');
-const Notification = require('./Notification');
+const Notification = require('./notification');
 const User = require('./user');
 const Product = require('./product');
 const { format } = require('date-fns');
