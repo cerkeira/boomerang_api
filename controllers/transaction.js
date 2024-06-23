@@ -16,6 +16,9 @@ exports.createTransaction = async (req, res) => {
     if (!loggedUser) {
         return res.status(401).json({ message: 'User not found' });
     }
+    const existingUser = await User.findOne({
+        where: { username: loggedUser },
+    });
 
     const user = await User.findOne({ where: { username: loggedUser } });
 
@@ -31,6 +34,10 @@ exports.createTransaction = async (req, res) => {
         const state = 'approved';
 
         const ownerUserId = product.UserId;
+
+        if (ownerUserId === existingUser.id) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
 
         const transaction = await Transaction.create({
             date_start,
@@ -51,6 +58,14 @@ exports.createTransaction = async (req, res) => {
 exports.setTransactionRejected = async (req, res) => {
     const { transactionId } = req.params;
 
+    const loggedUser = req.session.user;
+    if (!loggedUser) {
+        return res.status(401).json({ message: 'User not found' });
+    }
+    const existingUser = await User.findOne({
+        where: { username: loggedUser },
+    });
+
     try {
         const transaction = await Transaction.findByPk(transactionId);
 
@@ -58,10 +73,14 @@ exports.setTransactionRejected = async (req, res) => {
             return res.status(404).json({ error: 'Transaction not found' });
         }
 
-        transaction.StateId = 'rejected';
+        if (transaction.ownerUserId !== existingUser.id) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        transaction.state = 'rejected';
         await transaction.save();
 
-        res.json({ transaction_id: transaction.id, state_id: transaction.StateId });
+        res.json({ transaction });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -70,6 +89,14 @@ exports.setTransactionRejected = async (req, res) => {
 exports.setTransactionApproved = async (req, res) => {
     const { transactionId } = req.params;
 
+    const loggedUser = req.session.user;
+    if (!loggedUser) {
+        return res.status(401).json({ message: 'User not found' });
+    }
+    const existingUser = await User.findOne({
+        where: { username: loggedUser },
+    });
+
     try {
         const transaction = await Transaction.findByPk(transactionId);
 
@@ -77,10 +104,14 @@ exports.setTransactionApproved = async (req, res) => {
             return res.status(404).json({ error: 'Transaction not found' });
         }
 
-        transaction.StateId = 'approved';
+        if (transaction.ownerUserId !== existingUser.id) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        transaction.state = 'approved';
         await transaction.save();
 
-        res.json({ transaction_id: transaction.id, state_id: transaction.StateId });
+        res.json({ transaction });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -126,6 +157,7 @@ exports.setTransactionInUse = async (req, res) => {
 
 
 exports.getUserTransactions = async (req, res) => {
+    const { transactionId } = req.params;
     const loggedUser = req.session.user;
     if (!loggedUser) {
         return res.status(401).json({ message: 'User not found' });
@@ -138,14 +170,29 @@ exports.getUserTransactions = async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        const transactions = await Transaction.findAll({
-            where: {
-                [Op.or]: [
-                    { renterUserId: user.id },
-                    { ownerUserId: user.id }
-                ]
-            },
-        });
+        let transactions;
+
+        if (transactionId) {
+            transactions = await Transaction.findByPk(transactionId, {
+                include: [Product]
+            });
+            if (!transactions) {
+                return res.status(404).json({ error: 'Transaction not found' });
+            }
+            if (transactions.renterUserId !== user.id && transactions.ownerUserId !== user.id) {
+                return res.status(401).json({ error: 'Unauthorized' });
+            }
+        } else {
+            transactions = await Transaction.findAll({
+                where: {
+                    [Op.or]: [
+                        { renterUserId: user.id },
+                        { ownerUserId: user.id }
+                    ]
+                },
+                include: [Product]
+            });
+        }
 
         res.json(transactions);
     } catch (error) {
@@ -165,7 +212,7 @@ exports.createCheckoutSession = async (req, res) => {
             return res.status(404).json({ error: 'Transaction not found' });
         }
 
-        let totalPrice = transaction.log.price;
+        let totalPrice = 20;
 
         if (selectedExtras && selectedExtras.length > 0) {
             const extraRecords = await Extra.findAll({ where: { id: selectedExtras } });
@@ -178,6 +225,9 @@ exports.createCheckoutSession = async (req, res) => {
             return res.status(404).json({ error: 'Address not found' });
         }
 
+        // eslint-disable-next-line max-len
+        const productImage = transaction.Product.productImage ? transaction.Product.productImage : null;
+
         req.session.selectedExtras = selectedExtras;
 
         const api = 'http://localhost:3000';
@@ -188,9 +238,9 @@ exports.createCheckoutSession = async (req, res) => {
                 price_data: {
                     currency: 'eur',
                     product_data: {
-                        name: transaction.log.product.title,
-                        description: transaction.log.product.description,
-                        images: ['https://example.com/product-image.jpg'],
+                        name: transaction.Product.title,
+                        description: transaction.Product.description,
+                        images: productImage,
                     },
                     unit_amount: totalPrice * 100,
                 },
