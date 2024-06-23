@@ -274,6 +274,23 @@ module.exports = {
             {}
         );
 
+        const initialExtras = [
+            {
+                name: 'Lavandaria Sustentável',
+                value: 100,
+                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+            {
+                name: 'Transportadora Eco-Friendly',
+                value: 300,
+                createdAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+                updatedAt: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+        ];
+
+        await queryInterface.bulkInsert('Extras', initialExtras, {});
+
         const initialProducts = [
             {
                 title: 'produto',
@@ -295,8 +312,10 @@ module.exports = {
         await queryInterface.bulkInsert('Products', initialProducts, {});
     },
 
-    down: async (queryInterface, Sequelize) => {
+    down: async (queryInterface) => {
         await queryInterface.bulkDelete('Colors', null, {});
+
+        await queryInterface.bulkDelete('Extras', null, {});
 
         await queryInterface.bulkDelete('Sizes', null, {});
 
