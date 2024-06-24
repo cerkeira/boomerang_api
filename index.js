@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const session = require('express-session');
-// const cors = require('cors');
+const cors = require('cors');
 const passport = require('passport');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const bodyParser = require('body-parser');
@@ -33,11 +33,10 @@ app.use(
             // secure: true,
             httpOnly: true,
         },
-    })
-    // cors({
-    //     origin: process.env.CORS_ORIGIN || 'http://localhost:3001',
-    //     credentials: true,
-    // })
+    }),
+    cors()
+    // origin: process.env.CORS_ORIGIN || 'http://localhost:3001',
+    // credentials: true,
 );
 
 app.use(express.static('uploads'));
