@@ -19,7 +19,7 @@ const Favorite = sequelize.define('Favorite', {
                 await Notification.create({
                     type: 'favorite',
                     title: 'Novo favorito',
-                    message: `${user.username} favoritou o item ${product.title}.`,
+                    message: `${user.username} favoritou ${product.title}.`,
                     UserId: product.UserId,
                     ProductId: product.id,
                     FavoriteId: favorite.userId,
