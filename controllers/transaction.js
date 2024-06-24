@@ -270,8 +270,6 @@ exports.createCheckoutSession = async (req, res) => {
         // eslint-disable-next-line max-len
         const productImage = transaction.Product.productImage ? transaction.Product.productImage[0] : null;
 
-        req.session.selectedExtras = selectedExtras;
-
 
         const sessionData = {
             payment_method_types: ['card'],
@@ -290,16 +288,7 @@ exports.createCheckoutSession = async (req, res) => {
             mode: 'payment',
             success_url: `${req.headers.origin}/transaction-success`,
             cancel_url: `${req.headers.origin}/cancel-url`,
-            metadata: {
-                transactionId: transactionId,
-                renterUserAddress: renterUserAddress.toString(),
-                totalPrice: totalPrice,
-            }
         };
-
-        if (selectedExtras) {
-            sessionData.metadata.selectedExtras = JSON.stringify(selectedExtras);
-        }
 
         const session = await stripe.checkout.sessions.create(sessionData);
 
