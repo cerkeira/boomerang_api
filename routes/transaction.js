@@ -98,6 +98,8 @@ router.put('/:transactionId/rejected', transactionController.setTransactionRejec
  */
 router.put('/:transactionId/approved', transactionController.setTransactionApproved);
 
+router.put('/:transactionId/cancelled', transactionController.setTransactionCancelled);
+
 /**
  * @swagger
  * /transactions/{transactionId}/inTransit:
@@ -238,6 +240,7 @@ router.post('/create-checkout-session', transactionController.createCheckoutSess
  *         description: Error handling success callback
  */
 router.get('/success', transactionController.stripeSuccess);
+
 
 /**
  * @swagger
