@@ -18,6 +18,15 @@ exports.getUserNotifications = async (req, res) => {
             where: { UserId: existingUser.id },
         });
 
+        await Notification.update({
+            read: true
+        }, {
+            where: {
+                UserId: existingUser.id,
+                read: false
+            }
+        });
+
         const transactionNotifications = notifications.filter((notification) => notification.type === 'transaction' || notification.type === 'favorite');
 
         const transactionIds = transactionNotifications
