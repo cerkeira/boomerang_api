@@ -100,6 +100,8 @@ router.put('/:transactionId/approved', transactionController.setTransactionAppro
 
 router.put('/:transactionId/cancelled', transactionController.setTransactionCancelled);
 
+router.put('/paid', transactionController.workAround);
+
 /**
  * @swagger
  * /transactions/{transactionId}/inTransit:
@@ -218,28 +220,6 @@ router.get('/:transactionId?', transactionController.getUserTransactions);
  */
 router.post('/create-checkout-session', transactionController.createCheckoutSession);
 
-/**
- * @swagger
- * /transactions/success:
- *   get:
- *     summary: Handle Stripe success callback
- *     tags:
- *       - Transactions
- *     parameters:
- *       - in: query
- *         name: session_id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       302:
- *         description: Redirect to transaction success page
- *       404:
- *         description: Session not found
- *       500:
- *         description: Error handling success callback
- */
-router.get('/success', transactionController.stripeSuccess);
 
 
 /**
