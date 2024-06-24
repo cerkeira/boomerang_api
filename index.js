@@ -35,7 +35,7 @@ app.use(
         },
     }),
     cors({
-        origin: process.env.CORS_ORIGIN || 'https://boomerang.tdw-mctw.dev/',
+        origin: process.env.CORS_ORIGIN || 'http://localhost:3001',
         credentials: true,
     })
 );
