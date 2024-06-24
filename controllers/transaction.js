@@ -29,9 +29,9 @@ exports.createTransaction = async (req, res) => {
         if (!product) {
             return res.status(404).json({ error: 'Product not found' });
         }
-        
+
         const { price_day } = product;
-        const state = 'approved';
+        const state = 'pending';
 
         const ownerUserId = product.UserId;
 
@@ -86,8 +86,40 @@ exports.setTransactionRejected = async (req, res) => {
     }
 };
 
+exports.setTransactionCancelled = async (req, res) => {
+    const { transactionId } = req.params;
+
+    const loggedUser = req.session.user;
+    if (!loggedUser) {
+        return res.status(401).json({ message: 'User not found' });
+    }
+    const existingUser = await User.findOne({
+        where: { username: loggedUser },
+    });
+
+    try {
+        const transaction = await Transaction.findByPk(transactionId);
+
+        if (!transaction) {
+            return res.status(404).json({ error: 'Transaction not found' });
+        }
+
+        if (transaction.renterUserId !== existingUser.id) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        transaction.state = 'cancelled';
+        await transaction.save();
+
+        res.json({ transaction });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 exports.setTransactionApproved = async (req, res) => {
     const { transactionId } = req.params;
+    const { ownerUserAddress } = req.body;
 
     const loggedUser = req.session.user;
     if (!loggedUser) {
@@ -108,6 +140,11 @@ exports.setTransactionApproved = async (req, res) => {
             return res.status(401).json({ error: 'Unauthorized' });
         }
 
+        if (!ownerUserAddress) {
+            return res.status(404).json({ error: 'Missing Address' });
+        }
+
+        transaction.ownerUserAddress = ownerUserAddress;
         transaction.state = 'approved';
         await transaction.save();
 
@@ -127,10 +164,10 @@ exports.setTransactionInTransit = async (req, res) => {
             return res.status(404).json({ error: 'Transaction not found' });
         }
 
-        transaction.StateId = 'transit';
+        transaction.state = 'transit';
         await transaction.save();
 
-        res.json({ transaction_id: transaction.id, state_id: transaction.StateId });
+        res.json({ transaction });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -146,10 +183,10 @@ exports.setTransactionInUse = async (req, res) => {
             return res.status(404).json({ error: 'Transaction not found' });
         }
 
-        transaction.StateId = 'delivered';
+        transaction.state = 'delivered';
         await transaction.save();
 
-        res.json({ transaction_id: transaction.id, state_id: transaction.StateId });
+        res.json({ transaction });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -200,7 +237,6 @@ exports.getUserTransactions = async (req, res) => {
     }
 };
 
-
 exports.createCheckoutSession = async (req, res) => {
     const { transactionId, selectedExtras, renterUserAddress } = req.body;
 
@@ -212,7 +248,7 @@ exports.createCheckoutSession = async (req, res) => {
             return res.status(404).json({ error: 'Transaction not found' });
         }
 
-        let totalPrice = 20;
+        let totalPrice = transaction.Product.price_day;
 
         if (selectedExtras && selectedExtras.length > 0) {
             const extraRecords = await Extra.findAll({ where: { id: selectedExtras } });
@@ -230,7 +266,6 @@ exports.createCheckoutSession = async (req, res) => {
 
         req.session.selectedExtras = selectedExtras;
 
-        const api = 'http://localhost:3000';
 
         const sessionData = {
             payment_method_types: ['card'],
@@ -247,16 +282,17 @@ exports.createCheckoutSession = async (req, res) => {
                 quantity: 1,
             }],
             mode: 'payment',
-            success_url: `${api}/transaction/success?transactionId=${transactionId}&session_id={CHECKOUT_SESSION_ID}`,
+            success_url: `${req.headers.origin}/transaction-success`,
             cancel_url: `${req.headers.origin}/cancel-url`,
             metadata: {
                 transactionId: transactionId,
-                renterUserAddress: renterUserAddress,
+                renterUserAddress: renterUserAddress.toString(),
+                totalPrice: totalPrice,
             }
         };
 
         if (selectedExtras) {
-            sessionData.metadata.selectedExtras = selectedExtras;
+            sessionData.metadata.selectedExtras = JSON.stringify(selectedExtras);
         }
 
         const session = await stripe.checkout.sessions.create(sessionData);
@@ -269,6 +305,7 @@ exports.createCheckoutSession = async (req, res) => {
 };
 
 
+
 exports.stripeSuccess = async (req, res) => {
     const { session_id } = req.query;
 
@@ -278,8 +315,13 @@ exports.stripeSuccess = async (req, res) => {
             return res.status(404).json({ error: 'Session not found' });
         }
 
-        const selectedExtras = req.session.selectedExtras || [];
-        const { transactionId, renterUserAddress } = session.metadata;
+        const selectedExtras = req.session.selectedExtras || null;
+        const { transactionId, renterUserAddress, totalPrice } = session.metadata;
+
+        console.log(selectedExtras);
+        console.log(transactionId);
+        console.log(totalPrice);
+        console.log(renterUserAddress);
 
         const transaction = await Transaction.findByPk(transactionId, {
             include: [Product]
@@ -288,11 +330,20 @@ exports.stripeSuccess = async (req, res) => {
             return res.status(404).json({ error: 'Transaction not found' });
         }
 
-        const product = await Transaction.findByPk(transaction.productId);
+        const product = await Product.findByPk(transaction.productId);
 
-        console.log(transaction.log.product)
+        let extras = null;
 
-        const transactionLog = {
+        if (selectedExtras && selectedExtras.length > 0) {
+            const extraRecords = await Extra.findAll({ where: { id: selectedExtras } });
+            extras = extraRecords.map((extra) => ({
+                id: extra.id,
+                name: extra.name,
+                value: extra.value
+            }));
+        }
+
+        const order = {
             product: {
                 id: product.id,
                 title: product.title,
@@ -303,34 +354,17 @@ exports.stripeSuccess = async (req, res) => {
                 availability: product.availability,
                 brand: product.brand
             },
-            totalPrice: null,
-            cupon: null,
+            totalPrice: totalPrice,
+            coupon: null,
             fees: null,
-            extras: null,
+            extras: extras,
         };
 
-        // Add renterAddress to the log
-        transaction.log.renterUserAddress = renterUserAddress;
-
-        // Add extras to the log if there are any
-        if (selectedExtras.length > 0) {
-            const extraRecords = await Extra.findAll({ where: { id: selectedExtras } });
-            transaction.log.extras = extraRecords.map((extra) => ({
-                id: extra.id,
-                name: extra.name,
-                value: extra.value
-            }));
-        }
-
-
-        // Update the transaction state to 'paid'
-        transaction.StateId = 'paid';
-
-        transaction.log = transactionLog;
+        transaction.state = 'paid';
+        transaction.order = order;
 
         await transaction.save();
 
-        // Clear the selectedExtras from the session
         req.session.selectedExtras = null;
 
         const domain = 'http://localhost:3001';
@@ -342,6 +376,9 @@ exports.stripeSuccess = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+
+
 
 
 
