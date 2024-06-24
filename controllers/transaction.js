@@ -86,6 +86,37 @@ exports.setTransactionRejected = async (req, res) => {
     }
 };
 
+exports.setTransactionCancelled = async (req, res) => {
+    const { transactionId } = req.params;
+
+    const loggedUser = req.session.user;
+    if (!loggedUser) {
+        return res.status(401).json({ message: 'User not found' });
+    }
+    const existingUser = await User.findOne({
+        where: { username: loggedUser },
+    });
+
+    try {
+        const transaction = await Transaction.findByPk(transactionId);
+
+        if (!transaction) {
+            return res.status(404).json({ error: 'Transaction not found' });
+        }
+
+        if (transaction.renterUserId !== existingUser.id) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        transaction.state = 'cancelled';
+        await transaction.save();
+
+        res.json({ transaction });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 exports.setTransactionApproved = async (req, res) => {
     const { transactionId } = req.params;
     const { ownerUserAddress } = req.body;
@@ -345,6 +376,8 @@ exports.stripeSuccess = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+
 
 
 
