@@ -3,6 +3,7 @@ const Transaction = require('../models/transaction');
 const Extra = require('../models/extra');
 const User = require('../models/user');
 const { Op } = require('sequelize');
+const { differenceInCalendarDays } = require('date-fns');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const stripe = require('stripe')('sk_test_51PJCQdFBiJETLeRnI4a0tuJgzArGvSqzN8Y2PQaA7x79dx0eVgJMQENX255WHg6ypwLopaENc6nhs5aaVXB5qZCT00N7KhoDdT');
 
@@ -240,15 +241,19 @@ exports.getUserTransactions = async (req, res) => {
 exports.createCheckoutSession = async (req, res) => {
     const { transactionId, selectedExtras, renterUserAddress } = req.body;
 
+    let totalPrice;
     try {
         const transaction = await Transaction.findByPk(transactionId, {
             include: [Product]
         });
         if (!transaction) {
-            return res.status(404).json({ error: 'Transaction not found' });
+            return res.status(404)
+                .json({ error: 'Transaction not found' });
         }
 
-        let totalPrice = transaction.Product.price_day;
+        // eslint-disable-next-line max-len
+        const days = differenceInCalendarDays(new Date(transaction.date_end), new Date(transaction.date_start)) + 1;
+        totalPrice = transaction.Product.price_day * days;
 
         if (selectedExtras && selectedExtras.length > 0) {
             const extraRecords = await Extra.findAll({ where: { id: selectedExtras } });
@@ -258,13 +263,12 @@ exports.createCheckoutSession = async (req, res) => {
         }
 
         if (!renterUserAddress) {
-            return res.status(404).json({ error: 'Address not found' });
+            return res.status(404)
+                .json({ error: 'Address not found' });
         }
 
         // eslint-disable-next-line max-len
-        const productImage = transaction.Product.productImage ? transaction.Product.productImage : null;
-
-        req.session.selectedExtras = selectedExtras;
+        const productImage = transaction.Product.productImage ? transaction.Product.productImage[0] : null;
 
 
         const sessionData = {
@@ -284,55 +288,40 @@ exports.createCheckoutSession = async (req, res) => {
             mode: 'payment',
             success_url: `${req.headers.origin}/transaction-success`,
             cancel_url: `${req.headers.origin}/cancel-url`,
-            metadata: {
-                transactionId: transactionId,
-                renterUserAddress: renterUserAddress.toString(),
-                totalPrice: totalPrice,
-            }
         };
-
-        if (selectedExtras) {
-            sessionData.metadata.selectedExtras = JSON.stringify(selectedExtras);
-        }
 
         const session = await stripe.checkout.sessions.create(sessionData);
 
         res.json({ id: session.id });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: error.message });
+        res.status(500)
+            .json({ error: error.message });
     }
 };
 
 
 
-exports.stripeSuccess = async (req, res) => {
-    const { session_id } = req.query;
+exports.workAround = async (req, res) => {
+    const { transactionId, selectedExtras, renterUserAddress } = req.body;
 
+    let totalPrice;
     try {
-        const session = await stripe.checkout.sessions.retrieve(session_id);
-        if (!session) {
-            return res.status(404).json({ error: 'Session not found' });
-        }
-
-        const selectedExtras = req.session.selectedExtras || null;
-        const { transactionId, renterUserAddress, totalPrice } = session.metadata;
-
-        console.log(selectedExtras);
-        console.log(transactionId);
-        console.log(totalPrice);
-        console.log(renterUserAddress);
-
         const transaction = await Transaction.findByPk(transactionId, {
             include: [Product]
         });
         if (!transaction) {
-            return res.status(404).json({ error: 'Transaction not found' });
+            return res.status(404)
+                .json({ error: 'Transaction not found' });
         }
 
-        const product = await Product.findByPk(transaction.productId);
+        const product = await Product.findByPk(transaction.ProductId);
+        // eslint-disable-next-line max-len
+        const days = differenceInCalendarDays(new Date(transaction.date_end), new Date(transaction.date_start)) + 1;
+        totalPrice = product.price_day * days;
 
         let extras = null;
+        let extrasTotal = 0;
 
         if (selectedExtras && selectedExtras.length > 0) {
             const extraRecords = await Extra.findAll({ where: { id: selectedExtras } });
@@ -341,7 +330,10 @@ exports.stripeSuccess = async (req, res) => {
                 name: extra.name,
                 value: extra.value
             }));
+            extrasTotal = extraRecords.reduce((sum, extra) => sum + extra.value, 0);
         }
+
+        totalPrice += extrasTotal;
 
         const order = {
             product: {
@@ -359,27 +351,22 @@ exports.stripeSuccess = async (req, res) => {
             fees: null,
             extras: extras,
         };
-
+        transaction.renterUserAddress = renterUserAddress;
         transaction.state = 'paid';
         transaction.order = order;
 
         await transaction.save();
 
-        req.session.selectedExtras = null;
 
         const domain = 'http://localhost:3001';
-        console.log(session.metadata);
 
-        res.redirect(`${domain}/transaction-success`);
+        res.redirect(`${domain}/`);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: error.message });
+        res.status(500)
+            .json({ error: error.message });
     }
 };
-
-
-
-
 
 
 exports.stripeCancel = async (req, res) => {
