@@ -241,15 +241,19 @@ exports.getUserTransactions = async (req, res) => {
 exports.createCheckoutSession = async (req, res) => {
     const { transactionId, selectedExtras, renterUserAddress } = req.body;
 
+    let totalPrice;
     try {
         const transaction = await Transaction.findByPk(transactionId, {
             include: [Product]
         });
         if (!transaction) {
-            return res.status(404).json({ error: 'Transaction not found' });
+            return res.status(404)
+                .json({ error: 'Transaction not found' });
         }
 
-        let totalPrice = transaction.Product.price_day;
+        // eslint-disable-next-line max-len
+        const days = differenceInCalendarDays(new Date(transaction.date_end), new Date(transaction.date_start)) + 1;
+        totalPrice = transaction.Product.price_day * days;
 
         if (selectedExtras && selectedExtras.length > 0) {
             const extraRecords = await Extra.findAll({ where: { id: selectedExtras } });
@@ -259,11 +263,12 @@ exports.createCheckoutSession = async (req, res) => {
         }
 
         if (!renterUserAddress) {
-            return res.status(404).json({ error: 'Address not found' });
+            return res.status(404)
+                .json({ error: 'Address not found' });
         }
 
         // eslint-disable-next-line max-len
-        const productImage = transaction.Product.productImage ? transaction.Product.productImage : null;
+        const productImage = transaction.Product.productImage ? transaction.Product.productImage[0] : null;
 
         req.session.selectedExtras = selectedExtras;
 
@@ -301,7 +306,8 @@ exports.createCheckoutSession = async (req, res) => {
         res.json({ id: session.id });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: error.message });
+        res.status(500)
+            .json({ error: error.message });
     }
 };
 
