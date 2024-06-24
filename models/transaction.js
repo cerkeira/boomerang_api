@@ -48,7 +48,7 @@ const Transaction = sequelize.define('Transaction', {
         afterCreate: async (transaction) => {
             try {
                 console.log(transaction.id)
-                const ownerUser = await User.findByPk(transaction.ownerUserId);
+                const renterUser = await User.findByPk(transaction.renterUserId);
                 const item = await Product.findByPk(transaction.ProductId);
                 const dateStartFormatted = format(new Date(transaction.date_start), 'dd/MM/yyyy', { locale: pt });
                 const dateEndFormatted = format(new Date(transaction.date_end), 'dd/MM/yyyy', { locale: pt });
@@ -56,7 +56,7 @@ const Transaction = sequelize.define('Transaction', {
                 await Notification.create({
                     type: 'transaction',
                     title: 'Novo pedido de aluguer recebido',
-                    message: `Recebeste um novo pedido de aluguer de ${ownerUser.name} para ${item.title} no período de ${dateStartFormatted} a ${dateEndFormatted}.`,
+                    message: `Recebeste um novo pedido de aluguer de ${renterUser.name} para ${item.title} no período de ${dateStartFormatted} a ${dateEndFormatted}.`,
                     TransactionId: transaction.id,
                     UserId: transaction.ownerUserId,
                     ProductId: transaction.ProductId,
