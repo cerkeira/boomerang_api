@@ -34,9 +34,10 @@ app.use(
             httpOnly: true,
         },
     }),
-    cors()
-    // origin: process.env.CORS_ORIGIN || 'http://localhost:3001',
-    // credentials: true,
+    cors({
+        origin: process.env.CORS_ORIGIN || 'https://boomerang.tdw-mctw.dev/',
+        credentials: true,
+    })
 );
 
 app.use(express.static('uploads'));
