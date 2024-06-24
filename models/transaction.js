@@ -56,7 +56,7 @@ const Transaction = sequelize.define('Transaction', {
                 await Notification.create({
                     type: 'transaction',
                     title: 'Novo pedido de aluguer recebido',
-                    message: `Recebeste um novo pedido de aluguer de ${ownerUser.name} para o item ${item.title} no período de ${dateStartFormatted} a ${dateEndFormatted}.`,
+                    message: `Recebeste um novo pedido de aluguer de ${ownerUser.name} para ${item.title} no período de ${dateStartFormatted} a ${dateEndFormatted}.`,
                     TransactionId: transaction.id,
                     UserId: transaction.ownerUserId,
                     ProductId: transaction.ProductId,
@@ -72,7 +72,7 @@ const Transaction = sequelize.define('Transaction', {
                     await Notification.create({
                         type: 'transaction',
                         title: 'Pedido de aluguer aceite',
-                        message: `O pedido de aluguer para o item ${item.title} foi aceite pelo promotor. Clica aqui para pagar agora ou cancelar o pedido`,
+                        message: `O pedido de aluguer para ${item.title} foi aceite pelo promotor. Clica aqui para pagar agora ou cancelar o pedido`,
                         TransactionId: transaction.id,
                         UserId: transaction.renterUserId,
                         ProductId: transaction.ProductId,
@@ -82,7 +82,7 @@ const Transaction = sequelize.define('Transaction', {
                     await Notification.create({
                         type: 'transaction',
                         title: 'Pedido de aluguer rejeitado',
-                        message: `O pedido de aluguer para o item ${item.title} foi rejeitado pelo promotor.`,
+                        message: `O pedido de aluguer para ${item.title} foi rejeitado pelo promotor.`,
                         TransactionId: transaction.id,
                         UserId: transaction.renterUserId,
                         ProductId: transaction.ProductId,
@@ -92,7 +92,7 @@ const Transaction = sequelize.define('Transaction', {
                     await Notification.create({
                         type: 'transaction',
                         title: 'Pagamento recebido',
-                        message: `O pagamento pelo aluguer do item ${item.title} foi recebido. Clique aqui para visualizar os detalhes da transação e instruções de envio.`,
+                        message: `O pagamento pelo aluguer de ${item.title} foi recebido. Clique aqui para visualizar os detalhes da transação e instruções de envio.`,
                         TransactionId: transaction.id,
                         UserId: transaction.renterUserId,
                         ProductId: transaction.ProductId,
@@ -102,7 +102,7 @@ const Transaction = sequelize.define('Transaction', {
                     await Notification.create({
                         type: 'transaction',
                         title: 'Aluguer cancelado',
-                        message: `O aluguer do item ${item.title} foi cancelado pelo utilizador. Clique aqui para visualizar os detalhes da transação.`,
+                        message: `O aluguer de ${item.title} foi cancelado pelo utilizador. Clique aqui para visualizar os detalhes da transação.`,
                         TransactionId: transaction.id,
                         UserId: transaction.renterUserId,
                         ProductId: transaction.ProductId,

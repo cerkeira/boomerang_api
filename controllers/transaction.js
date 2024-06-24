@@ -29,7 +29,7 @@ exports.createTransaction = async (req, res) => {
         if (!product) {
             return res.status(404).json({ error: 'Product not found' });
         }
-        
+
         const { price_day } = product;
         const state = 'pending';
 
@@ -88,6 +88,7 @@ exports.setTransactionRejected = async (req, res) => {
 
 exports.setTransactionApproved = async (req, res) => {
     const { transactionId } = req.params;
+    const { ownerUserAddress } = req.body;
 
     const loggedUser = req.session.user;
     if (!loggedUser) {
@@ -108,6 +109,11 @@ exports.setTransactionApproved = async (req, res) => {
             return res.status(401).json({ error: 'Unauthorized' });
         }
 
+        if (!ownerUserAddress) {
+            return res.status(404).json({ error: 'Missing Address' });
+        }
+
+        transaction.ownerUserAddress = ownerUserAddress;
         transaction.state = 'approved';
         await transaction.save();
 
@@ -127,10 +133,10 @@ exports.setTransactionInTransit = async (req, res) => {
             return res.status(404).json({ error: 'Transaction not found' });
         }
 
-        transaction.StateId = 'transit';
+        transaction.state = 'transit';
         await transaction.save();
 
-        res.json({ transaction_id: transaction.id, state_id: transaction.StateId });
+        res.json({ transaction });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -146,10 +152,10 @@ exports.setTransactionInUse = async (req, res) => {
             return res.status(404).json({ error: 'Transaction not found' });
         }
 
-        transaction.StateId = 'delivered';
+        transaction.state = 'delivered';
         await transaction.save();
 
-        res.json({ transaction_id: transaction.id, state_id: transaction.StateId });
+        res.json({ transaction });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -199,7 +205,6 @@ exports.getUserTransactions = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-
 
 exports.createCheckoutSession = async (req, res) => {
     const { transactionId, selectedExtras, renterUserAddress } = req.body;
