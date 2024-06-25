@@ -30,25 +30,19 @@ app.use(
         resave: false,
         saveUninitialized: true,
         cookie: {
-            secure: true,
             httpOnly: true,
             path: '/',
-            sameSite: 'none',
         },
     }),
-    // cors({
-    //     origin: [
-    //         'http://localhost:3001',
-    //         'http://127.0.0.1:3001/',
-    //         'http://localhost:3000',
-    //         'http://127.0.0.1:3000/',
-    //         'https://boomerang.tdw-mctw.dev',
-    //     ],
-    //     methods: ['GET', 'PUT', 'POST', 'DELETE'],
-    //     credentials: true,
-    // })
     cors({
-        origin: process.env.CORS_ORIGIN || 'http://localhost:3001',
+        origin: [
+            'http://localhost:3001',
+            'http://127.0.0.1:3001/',
+            'http://localhost:3000',
+            'http://127.0.0.1:3000/',
+            'https://boomerang.tdw-mctw.dev',
+        ],
+        methods: ['GET', 'PUT', 'POST', 'DELETE'],
         credentials: true,
     })
 );
