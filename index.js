@@ -30,7 +30,7 @@ app.use(
         resave: false,
         saveUninitialized: true,
         cookie: {
-            secure: process.env.SECURE || 'false',
+            secure: process.env.SECURE || false,
             httpOnly: true,
         },
     }),
