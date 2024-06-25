@@ -32,7 +32,6 @@ app.use(
         cookie: {
             secure: process.env.SECURE || 'false',
             httpOnly: true,
-            sameSite: 'None',
         },
     }),
     cors({
