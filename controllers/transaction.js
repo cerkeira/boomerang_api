@@ -268,7 +268,7 @@ exports.createCheckoutSession = async (req, res) => {
         }
 
         // eslint-disable-next-line max-len
-        const productImage = transaction.Product.productImage ? transaction.Product.productImage[0] : null;
+        const productImage = transaction.Product.productImage ? transaction.Product.productImage : null;
 
 
         const sessionData = {
