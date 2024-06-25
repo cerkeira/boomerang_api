@@ -30,8 +30,9 @@ app.use(
         resave: false,
         saveUninitialized: true,
         cookie: {
-            // secure: true,
+            secure: process.env.SECURE || 'false',
             httpOnly: true,
+            sameSite: 'None',
         },
     }),
     cors({
