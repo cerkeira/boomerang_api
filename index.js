@@ -35,7 +35,12 @@ app.use(
         },
     }),
     cors({
-        origin: process.env.CORS_ORIGIN || 'http://localhost:3001',
+        origin: [
+            'http://localhost:3001',
+            'http://localhost:3000',
+            'https://boomerang.tdw-mctw.dev',
+        ],
+        methods: ['GET', 'PUT', 'POST', 'DELETE'],
         credentials: true,
     })
 );
