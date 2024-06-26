@@ -7,7 +7,7 @@ let dialectModule = '';
 
 const config = require('config');
 // definir dialectModule para evitar erro de falta de pg no Vercel
-if (process.env.DIALECT == 'postgres') {
+if (process.env.DIALECT === 'postgres') {
     dialectModule = pg;
 }
 

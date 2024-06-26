@@ -76,7 +76,8 @@ exports.getFavoriteProducts = async (req, res) => {
 // };
 
 exports.addToFavorites = async (req, res) => {
-    // validação do express-validator incluida no endpoint para evitar erros (tbm não percebi, mas na route dava erro, aqui não :) )
+    // validação do express-validator incluida no endpoint para evitar erros
+    // (tbm não percebi, mas na route dava erro, aqui não :) )
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });

@@ -101,7 +101,8 @@ exports.registerUser = async (req, res) => {
             profileImage: profileImagePath,
         });
 
-        // não está implementado no front-endOfDay, mas é possível adicionar uma morada no momento do registo
+        // não está implementado no front-endOfDay
+        // mas é possível adicionar uma morada no momento do registo
         if (location) {
             const { locationName, address } = location;
             const newLocation = await Location.create({
