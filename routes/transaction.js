@@ -100,6 +100,8 @@ router.put('/:transactionId/approved', transactionController.setTransactionAppro
 
 router.put('/:transactionId/cancelled', transactionController.setTransactionCancelled);
 
+router.get('/success', transactionController.stripeSuccess);
+
 router.put('/paid', transactionController.workAround);
 
 /**
