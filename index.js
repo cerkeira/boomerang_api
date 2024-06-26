@@ -34,6 +34,7 @@ app.use(
             path: '/',
         },
     }),
+    // todas as origins que gostavamos de ter :(
     cors({
         origin: [
             'http://localhost:3001',
@@ -47,6 +48,7 @@ app.use(
     })
 );
 
+// user -> upload de imagens
 app.use(express.static('uploads'));
 
 // route de teste de upload de ficheiros
@@ -70,6 +72,7 @@ app.use(express.static('uploads'));
 //     }
 // });
 
+// routes de login com o google
 require('./db/passport');
 app.use(passport.initialize());
 app.use(passport.session());
@@ -77,6 +80,7 @@ app.use(passport.session());
 // route de teste
 // app.use('/', (req, res) => res.status(200).json({ message: 'Esta é a API da Boomerang' }));
 
+// routes
 app.use('/user', userRoutes);
 app.use('/popular', popularRoutes);
 app.use('/transaction', transactionRoutes);
@@ -87,8 +91,10 @@ app.use('/notification', notificationRoutes);
 app.use('/google', googleRoutes);
 app.use('/extra', extraRoutes);
 
+// associações
 defineAssociations();
 
+// configuração do OpenAPI
 const options = {
     definition: {
         openapi: '3.0.0',
@@ -113,11 +119,11 @@ const options = {
         './routes/extra.js',
     ],
 };
-
+// definir options
 const specs = swaggerJsdoc(options);
-
+// servir OpenAPI
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
-
+// sync
 sequelize
     .sync({
         // force: true,

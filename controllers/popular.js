@@ -9,12 +9,13 @@ exports.getPopularCategories = async (req, res) => {
                 'id',
                 'name',
                 [
+                    // encontrar as 10 usadas mais vezes
                     Sequelize.literal(`(
                         SELECT COUNT(*)
                         FROM "Transactions" AS transaction
                         WHERE transaction."ProductId" = "ProductTypes"."id"
                     )`),
-                    'timesUsedCount'
+                    'timesUsedCount',
                 ],
             ],
             order: [[Sequelize.literal('"timesUsedCount"'), 'DESC']],
@@ -24,7 +25,9 @@ exports.getPopularCategories = async (req, res) => {
         res.status(200).json(categories);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Failed to retrieve popular categories' });
+        res.status(500).json({
+            message: 'Failed to retrieve popular categories',
+        });
     }
 };
 
@@ -36,12 +39,13 @@ exports.getPopularPromoters = async (req, res) => {
                 'username',
                 'profileImage',
                 [
+                    // encontrar os 10 mais usados
                     Sequelize.literal(`(
                         SELECT COUNT(*)
                         FROM "Transactions" AS transaction
                         WHERE transaction."ownerUserId" = "User"."id"
                     )`),
-                    'timesUsedCount'
+                    'timesUsedCount',
                 ],
             ],
             order: [[Sequelize.literal('"timesUsedCount"'), 'DESC']],
@@ -51,6 +55,8 @@ exports.getPopularPromoters = async (req, res) => {
         res.status(200).json(promoters);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Failed to retrieve popular promoters' });
+        res.status(500).json({
+            message: 'Failed to retrieve popular promoters',
+        });
     }
 };

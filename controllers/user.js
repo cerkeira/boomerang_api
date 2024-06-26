@@ -34,7 +34,7 @@ exports.searchUsersByUsername = async (req, res) => {
 
 exports.getUser = async (req, res) => {
     let { id } = req.query;
-
+    // se id não for fornecido, procura por utilizador logado
     if (!id) {
         const loggedUser = req.session.user;
         if (loggedUser) {
@@ -53,12 +53,13 @@ exports.getUser = async (req, res) => {
         const userIncludeOptions = {
             include: [Location],
         };
-
+        // encontrar user e moradas
         const user = await User.findByPk(id, userIncludeOptions);
 
         if (!user) {
             return res.status(404).json({ message: 'User not found.' });
         }
+        // encontrar produtos e tamanhos (informação para a página de armário)
         const products = await Product.findAll({
             where: { UserId: id },
             include: [{ model: Size, attributes: ['name'] }],
@@ -100,6 +101,8 @@ exports.registerUser = async (req, res) => {
             profileImage: profileImagePath,
         });
 
+        // não está implementado no front-endOfDay
+        // mas é possível adicionar uma morada no momento do registo
         if (location) {
             const { locationName, address } = location;
             const newLocation = await Location.create({

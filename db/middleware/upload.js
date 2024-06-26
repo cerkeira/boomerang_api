@@ -5,22 +5,24 @@ const sharp = require('sharp');
 const upload = multer({
     storage: multer.memoryStorage(),
     fileFilter: (req, file, cb) => {
+        // confirmar mimetype
         if (file.mimetype.startsWith('image/')) {
             cb(null, true);
         } else {
             cb(new Error('Only images are allowed!'), false);
         }
     },
+    // gerar nome do ficheiro com uuidv
     filename: (req, file, cb) => {
         const uniqueSuffix = `${uuidv4()}-${file.originalname}`;
         cb(null, uniqueSuffix);
     },
 });
-
+// upload para produtos
 const uploadMiddleware = upload.array('productImage', 5);
-
+// upload para perfil
 const uploadSingle = upload.single('profileImage');
-
+// compressão com sharp
 const compressImage = async (file) => {
     await sharp(file.buffer)
         .resize({ width: 600, height: 600, fit: 'inside' })

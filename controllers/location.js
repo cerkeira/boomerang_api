@@ -8,14 +8,12 @@ exports.editLocation = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const {
- id, locationName, address, postalCode 
-} = req.body;
+        const { id, locationName, address, postalCode } = req.body;
 
         const user = await User.findOne({ where: { username: loggedUser } });
 
         const userLocation = await Location.findByPk(id);
-
+        // comparar ids para garantir que existe
         if (!userLocation || userLocation.UserId !== user.id) {
             return res.status(404).json({
                 message: 'Location not found or does not belong to the user',
@@ -37,7 +35,7 @@ exports.listUserLocations = async (req, res) => {
         if (!loggedUser) {
             return res.status(404).json({ message: 'User not found' });
         }
-
+        // buscar utilizador logado
         const user = await User.findOne({ where: { username: loggedUser } });
 
         const userLocations = await user.getLocations();

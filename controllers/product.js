@@ -16,6 +16,7 @@ exports.getProduct = async (req, res) => {
             where: {
                 id: id,
             },
+            // incluir nomes dos tamanhos e etc.
             include: [
                 { model: Size, attributes: ['name'] },
                 { model: ProductType, attributes: ['name', 'category'] },
@@ -57,15 +58,19 @@ exports.publishProduct = async (req, res) => {
             GradeId,
         } = req.body;
 
+        // upload de imagens
         const images = [];
         if (req.files && req.files.length > 0) {
             for (const file of req.files) {
+                // definir nome compressed
                 const filename = `compressed-${file.filename}`;
+                // função da vercel blob para upload
                 const blob = await put(filename, file.buffer, {
                     access: 'public',
                     mimetype: file.mimetype,
                     token: process.env.BLOB_READ_WRITE_TOKEN,
                 });
+                // juntar imagem ao array de 5
                 images.push(blob.url);
             }
         }
@@ -196,6 +201,7 @@ exports.editProduct = async (req, res) => {
     }
 };
 
+// encontrar nome e ids de cada campo necessário para publicar produto
 exports.getForm = async (req, res) => {
     try {
         const loggedUser = req.session.user;
