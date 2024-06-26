@@ -8,12 +8,8 @@ const { differenceInCalendarDays } = require('date-fns');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 // Secret key do stripe
 
-
-
 exports.createTransaction = async (req, res) => {
-    const {
-        date_start, date_end, productId
-    } = req.body;
+    const { date_start, date_end, productId } = req.body;
 
     const loggedUser = req.session.user;
     if (!loggedUser) {
@@ -254,12 +250,15 @@ exports.getUserTransactions = async (req, res) => {
 
         if (transactionId) {
             transactions = await Transaction.findByPk(transactionId, {
-                include: [Product]
+                include: [Product],
             });
             if (!transactions) {
                 return res.status(404).json({ error: 'Transaction not found' });
             }
-            if (transactions.renterUserId !== user.id && transactions.ownerUserId !== user.id) {
+            if (
+                transactions.renterUserId !== user.id &&
+                transactions.ownerUserId !== user.id
+            ) {
                 return res.status(401).json({ error: 'Unauthorized' });
             }
         } else {
@@ -267,10 +266,10 @@ exports.getUserTransactions = async (req, res) => {
                 where: {
                     [Op.or]: [
                         { renterUserId: user.id },
-                        { ownerUserId: user.id }
-                    ]
+                        { ownerUserId: user.id },
+                    ],
                 },
-                include: [Product]
+                include: [Product],
             });
         }
 
@@ -286,52 +285,58 @@ exports.createCheckoutSession = async (req, res) => {
     let totalPrice;
     try {
         const transaction = await Transaction.findByPk(transactionId, {
-            include: [Product]
+            include: [Product],
         });
         if (!transaction) {
-            return res.status(404)
-                .json({ error: 'Transaction not found' });
+            return res.status(404).json({ error: 'Transaction not found' });
         }
 
         // Preço pelo número de dias
-        const days = differenceInCalendarDays(new Date(transaction.date_end), new Date(transaction.date_start)) + 1;
+        const days =
+            differenceInCalendarDays(
+                new Date(transaction.date_end),
+                new Date(transaction.date_start)
+            ) + 1;
         totalPrice = transaction.Product.price_day * days;
 
         // Soma do preço dos extras ao preço total
         let extraRecords;
 
         // Taxa de proteção
-        totalPrice += (totalPrice * 0.05) + 2;
+        totalPrice += totalPrice * 0.05 + 2;
 
         if (selectedExtras && selectedExtras.length > 0) {
-            extraRecords = await Extra.findAll({ where: { id: selectedExtras } });
+            extraRecords = await Extra.findAll({
+                where: { id: selectedExtras },
+            });
             extraRecords.forEach((extra) => {
                 totalPrice += extra.value;
             });
         }
 
         if (!renterUserAddress) {
-            return res.status(404)
-                .json({ error: 'Address not found' });
+            return res.status(404).json({ error: 'Address not found' });
         }
 
         //  URL da API retirada do .env
-        const api = process.env.BASE_URL
+        const api = 'http://localhost:3001/';
 
         //  Alteração dos detalhes da sessão de checkout para corresponder à nossa app
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
-            line_items: [{
-                price_data: {
-                    currency: 'eur',
-                    product_data: {
-                        name: transaction.Product.title,
-                        description: transaction.Product.description,
+            line_items: [
+                {
+                    price_data: {
+                        currency: 'eur',
+                        product_data: {
+                            name: transaction.Product.title,
+                            description: transaction.Product.description,
+                        },
+                        unit_amount: totalPrice * 100,
                     },
-                    unit_amount: totalPrice * 100,
+                    quantity: 1,
                 },
-                quantity: 1,
-            }],
+            ],
             mode: 'payment',
             success_url: `${api}transaction/success?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${req.headers.origin}/transaction-error`,
@@ -341,17 +346,16 @@ exports.createCheckoutSession = async (req, res) => {
                 selectedExtras: JSON.stringify(extraRecords),
                 totalPrice: totalPrice,
                 domain: req.headers.origin,
-            }
+            },
         });
 
-        console.log(session)
+        console.log(session);
 
         res.json({ id: session.id });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
-
 
 exports.stripeSuccess = async (req, res) => {
     const { session_id } = req.query;
@@ -362,17 +366,22 @@ exports.stripeSuccess = async (req, res) => {
             return res.status(404).json({ error: 'Session not found' });
         }
 
-        const { transactionId, renterUserAddress, selectedExtras, totalPrice, domain } = session.metadata;
+        const {
+            transactionId,
+            renterUserAddress,
+            selectedExtras,
+            totalPrice,
+            domain,
+        } = session.metadata;
         console.log(transactionId);
         console.log(renterUserAddress);
         console.log(selectedExtras);
 
         const transaction = await Transaction.findByPk(transactionId, {
-            include: [Product]
+            include: [Product],
         });
         if (!transaction) {
-            return res.status(404)
-                .json({ error: 'Transaction not found' });
+            return res.status(404).json({ error: 'Transaction not found' });
         }
 
         const product = await Product.findByPk(transaction.ProductId);
@@ -387,7 +396,7 @@ exports.stripeSuccess = async (req, res) => {
                 ProductTypeId: product.ProductTypeId,
                 price_day: product.price_day,
                 availability: product.availability,
-                brand: product.brand
+                brand: product.brand,
             },
             totalPrice: totalPrice,
             coupon: null,
@@ -396,7 +405,7 @@ exports.stripeSuccess = async (req, res) => {
                     name: 'Taxa de Proteção',
                     value: 2,
                     porcentage: 5,
-                }
+                },
             ],
             extras: JSON.parse(selectedExtras),
         };
@@ -407,7 +416,7 @@ exports.stripeSuccess = async (req, res) => {
 
         await transaction.save();
 
-    // Redirect para a página de sucesso pós-pagamento
+        // Redirect para a página de sucesso pós-pagamento
         res.redirect(`${domain}/transaction-success`);
     } catch (error) {
         res.status(500).json({ error: error.message });
