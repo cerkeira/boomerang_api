@@ -204,11 +204,6 @@ exports.editProduct = async (req, res) => {
 // encontrar nome e ids de cada campo necessário para publicar produto
 exports.getForm = async (req, res) => {
     try {
-        const loggedUser = req.session.user;
-        if (!loggedUser) {
-            return res.status(403).json({ message: 'User not logged in.' });
-        }
-
         const sizes = await Size.findAll({
             attributes: ['id', 'name'],
         });

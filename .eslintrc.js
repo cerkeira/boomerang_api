@@ -36,6 +36,7 @@ module.exports = {
         'no-param-reassign': 'off',
         'no-unused-expressions': 'off',
         'import/extensions': 'off',
+        'max-len': 'off',
     },
     ignorePatterns: ['migrations/', 'seeders/'],
 };

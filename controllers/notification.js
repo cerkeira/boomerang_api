@@ -55,13 +55,10 @@ exports.getUserNotifications = async (req, res) => {
         const notificationsWithTransactions = notifications.map((notification) => {
             const modifiedNotification = notification.toJSON();
             if (notification.type === 'transaction' || notification.type === 'favorite') {
-                // eslint-disable-next-line max-len
                 const relatedTransaction = transactions.find((transaction) => transaction.id === notification.TransactionId);
-                // eslint-disable-next-line max-len
                 modifiedNotification.transaction = relatedTransaction ? relatedTransaction.toJSON() : null;
 
                 if (notification.ProductId) {
-                    // eslint-disable-next-line max-len
                     const relatedProduct = products.find((product) => product.id === notification.ProductId);
                     modifiedNotification.product = relatedProduct ? relatedProduct.toJSON() : null;
                 }

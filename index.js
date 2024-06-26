@@ -117,6 +117,7 @@ const options = {
         './routes/popular.js',
         './routes/transaction.js',
         './routes/extra.js',
+        './routes/notification.js',
     ],
 };
 // definir options
