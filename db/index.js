@@ -6,8 +6,8 @@ process.env.NODE_ENV = argument.argv.slice(3);
 let dialectModule = '';
 
 const config = require('config');
-
-if (process.env.DIALECT) {
+// definir dialectModule para evitar erro de falta de pg no Vercel
+if (process.env.DIALECT == 'postgres') {
     dialectModule = pg;
 }
 
