@@ -94,7 +94,7 @@ const Transaction = sequelize.define('Transaction', {
                         title: 'Pagamento recebido',
                         message: `O pagamento pelo aluguer de ${item.title} foi recebido. Clique aqui para visualizar os detalhes da transação e instruções de envio.`,
                         TransactionId: transaction.id,
-                        UserId: transaction.renterUserId,
+                        UserId: transaction.ownerUserId,
                         ProductId: transaction.ProductId,
                     });
                 } else if (transaction.previous('state') !== 'cancelled' && transaction.state === 'cancelled') {

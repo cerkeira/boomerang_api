@@ -5,7 +5,9 @@ const User = require('../models/user');
 const { Op } = require('sequelize');
 const { differenceInCalendarDays } = require('date-fns');
 // eslint-disable-next-line import/no-extraneous-dependencies
-const stripe = require('stripe')('sk_test_51PJCQdFBiJETLeRnI4a0tuJgzArGvSqzN8Y2PQaA7x79dx0eVgJMQENX255WHg6ypwLopaENc6nhs5aaVXB5qZCT00N7KhoDdT');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+// Secret key do stripe
+
 
 
 exports.createTransaction = async (req, res) => {
@@ -32,6 +34,8 @@ exports.createTransaction = async (req, res) => {
         }
 
         const { price_day } = product;
+
+        //  Transação inicializada com o estado pending
         const state = 'pending';
 
         const ownerUserId = product.UserId;
@@ -174,6 +178,44 @@ exports.setTransactionInTransit = async (req, res) => {
     }
 };
 
+exports.setTransactionShipping = async (req, res) => {
+    const { transactionId } = req.params;
+
+    try {
+        const transaction = await Transaction.findByPk(transactionId);
+
+        if (!transaction) {
+            return res.status(404).json({ error: 'Transaction not found' });
+        }
+
+        transaction.state = 'shipping';
+        await transaction.save();
+
+        res.json({ transaction });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.setTransactionCompleted = async (req, res) => {
+    const { transactionId } = req.params;
+
+    try {
+        const transaction = await Transaction.findByPk(transactionId);
+
+        if (!transaction) {
+            return res.status(404).json({ error: 'Transaction not found' });
+        }
+
+        transaction.state = 'completed';
+        await transaction.save();
+
+        res.json({ transaction });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 exports.setTransactionInUse = async (req, res) => {
     const { transactionId } = req.params;
 
@@ -193,7 +235,7 @@ exports.setTransactionInUse = async (req, res) => {
     }
 };
 
-
+//  Fetch de transações, tanto como owner como renter
 exports.getUserTransactions = async (req, res) => {
     const { transactionId } = req.params;
     const loggedUser = req.session.user;
@@ -251,10 +293,11 @@ exports.createCheckoutSession = async (req, res) => {
                 .json({ error: 'Transaction not found' });
         }
 
-        // eslint-disable-next-line max-len
+        // Preço pelo número de dias
         const days = differenceInCalendarDays(new Date(transaction.date_end), new Date(transaction.date_start)) + 1;
         totalPrice = transaction.Product.price_day * days;
 
+        // Soma do preço dos extras ao preço total
         let extraRecords;
 
         if (selectedExtras && selectedExtras.length > 0) {
@@ -264,15 +307,18 @@ exports.createCheckoutSession = async (req, res) => {
             });
         }
 
+        // Taxa de proteção
+        totalPrice += (totalPrice * 0.05) + 2;
+
         if (!renterUserAddress) {
             return res.status(404)
                 .json({ error: 'Address not found' });
         }
 
-        // eslint-disable-next-line max-len
-        const productImage = transaction.Product.productImage ? transaction.Product.productImage : [];
-        const api = 'http://localhost:3000'
+        //  URL da API retirada do .env
+        const api = process.env.BASE_URL
 
+        //  Alteração dos detalhes da sessão de checkout para corresponder à nossa app
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             line_items: [{
@@ -281,19 +327,20 @@ exports.createCheckoutSession = async (req, res) => {
                     product_data: {
                         name: transaction.Product.title,
                         description: transaction.Product.description,
-                        images: productImage,
                     },
                     unit_amount: totalPrice * 100,
                 },
                 quantity: 1,
             }],
             mode: 'payment',
-            success_url: `${api}/transaction/success?session_id={CHECKOUT_SESSION_ID}`,
+            success_url: `${api}transaction/success?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${req.headers.origin}/transaction-error`,
             metadata: {
                 transactionId: transactionId,
                 renterUserAddress: JSON.stringify(renterUserAddress),
-                selectedExtras: JSON.stringify(extraRecords)
+                selectedExtras: JSON.stringify(extraRecords),
+                totalPrice: totalPrice,
+                domain: req.headers.origin,
             }
         });
 
@@ -310,31 +357,16 @@ exports.stripeSuccess = async (req, res) => {
     const { session_id } = req.query;
 
     try {
-        console.log('hello')
         const session = await stripe.checkout.sessions.retrieve(session_id);
         if (!session) {
             return res.status(404).json({ error: 'Session not found' });
         }
 
-        const { transactionId, renterUserAddress, selectedExtras } = session.metadata;
+        const { transactionId, renterUserAddress, selectedExtras, totalPrice, domain } = session.metadata;
         console.log(transactionId);
         console.log(renterUserAddress);
         console.log(selectedExtras);
 
-        res.redirect('http://localhost:3001/transaction-success');
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-
-
-
-
-exports.workAround = async (req, res) => {
-    const { transactionId, selectedExtras, renterUserAddress } = req.body;
-
-    let totalPrice;
-    try {
         const transaction = await Transaction.findByPk(transactionId, {
             include: [Product]
         });
@@ -344,25 +376,8 @@ exports.workAround = async (req, res) => {
         }
 
         const product = await Product.findByPk(transaction.ProductId);
-        // eslint-disable-next-line max-len
-        const days = differenceInCalendarDays(new Date(transaction.date_end), new Date(transaction.date_start)) + 1;
-        totalPrice = product.price_day * days;
 
-        let extras = null;
-        let extrasTotal = 0;
-
-        if (selectedExtras && selectedExtras.length > 0) {
-            const extraRecords = await Extra.findAll({ where: { id: selectedExtras } });
-            extras = extraRecords.map((extra) => ({
-                id: extra.id,
-                name: extra.name,
-                value: extra.value
-            }));
-            extrasTotal = extraRecords.reduce((sum, extra) => sum + extra.value, 0);
-        }
-
-        totalPrice += extrasTotal;
-
+        // Criação do JSON não variável de precaução
         const order = {
             product: {
                 id: product.id,
@@ -376,27 +391,25 @@ exports.workAround = async (req, res) => {
             },
             totalPrice: totalPrice,
             coupon: null,
-            fees: null,
-            extras: extras,
+            fees: [
+                {
+                    name: 'Taxa de Proteção',
+                    value: 2,
+                    porcentage: 5,
+                }
+            ],
+            extras: JSON.parse(selectedExtras),
         };
-        transaction.renterUserAddress = renterUserAddress;
+
+        transaction.renterUserAddress = JSON.parse(renterUserAddress);
         transaction.state = 'paid';
         transaction.order = order;
 
         await transaction.save();
 
-
-        const domain = 'http://localhost:3001';
-
-        res.redirect(`${domain}/`);
+    // Redirect para a página de sucesso pós-pagamento
+        res.redirect(`${domain}/transaction-success`);
     } catch (error) {
-        console.error(error);
-        res.status(500)
-            .json({ error: error.message });
+        res.status(500).json({ error: error.message });
     }
-};
-
-
-exports.stripeCancel = async (req, res) => {
-    res.redirect('/shrek-store');
 };
