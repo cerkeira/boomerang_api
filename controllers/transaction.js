@@ -255,8 +255,10 @@ exports.createCheckoutSession = async (req, res) => {
         const days = differenceInCalendarDays(new Date(transaction.date_end), new Date(transaction.date_start)) + 1;
         totalPrice = transaction.Product.price_day * days;
 
+        let extraRecords;
+
         if (selectedExtras && selectedExtras.length > 0) {
-            const extraRecords = await Extra.findAll({ where: { id: selectedExtras } });
+            extraRecords = await Extra.findAll({ where: { id: selectedExtras } });
             extraRecords.forEach((extra) => {
                 totalPrice += extra.value;
             });
@@ -268,10 +270,10 @@ exports.createCheckoutSession = async (req, res) => {
         }
 
         // eslint-disable-next-line max-len
-        const productImage = transaction.Product.productImage ? transaction.Product.productImage : null;
+        const productImage = transaction.Product.productImage ? transaction.Product.productImage : [];
+        const api = 'http://localhost:3000'
 
-
-        const sessionData = {
+        const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             line_items: [{
                 price_data: {
@@ -286,19 +288,45 @@ exports.createCheckoutSession = async (req, res) => {
                 quantity: 1,
             }],
             mode: 'payment',
-            success_url: `${req.headers.origin}/transaction-success`,
-            cancel_url: `${req.headers.origin}/cancel-url`,
-        };
+            success_url: `${api}/transaction/success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${req.headers.origin}/alugar-morada`,
+            metadata: {
+                transactionId: transactionId,
+                renterUserAddress: JSON.stringify(renterUserAddress),
+                selectedExtras: JSON.stringify(extraRecords)
+            }
+        });
 
-        const session = await stripe.checkout.sessions.create(sessionData);
+        console.log(session)
 
         res.json({ id: session.id });
     } catch (error) {
-        console.error(error);
-        res.status(500)
-            .json({ error: error.message });
+        res.status(500).json({ error: error.message });
     }
 };
+
+
+exports.stripeSuccess = async (req, res) => {
+    const { session_id } = req.query;
+
+    try {
+        console.log('hello')
+        const session = await stripe.checkout.sessions.retrieve(session_id);
+        if (!session) {
+            return res.status(404).json({ error: 'Session not found' });
+        }
+
+        const { transactionId, renterUserAddress, selectedExtras } = session.metadata;
+        console.log(transactionId);
+        console.log(renterUserAddress);
+        console.log(selectedExtras);
+
+        res.redirect('http://localhost:3001/transaction-success');
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 
 
 
