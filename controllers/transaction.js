@@ -300,15 +300,15 @@ exports.createCheckoutSession = async (req, res) => {
         // Soma do preço dos extras ao preço total
         let extraRecords;
 
+        // Taxa de proteção
+        totalPrice += (totalPrice * 0.05) + 2;
+
         if (selectedExtras && selectedExtras.length > 0) {
             extraRecords = await Extra.findAll({ where: { id: selectedExtras } });
             extraRecords.forEach((extra) => {
                 totalPrice += extra.value;
             });
         }
-
-        // Taxa de proteção
-        totalPrice += (totalPrice * 0.05) + 2;
 
         if (!renterUserAddress) {
             return res.status(404)
